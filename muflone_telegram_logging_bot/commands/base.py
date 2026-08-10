@@ -29,6 +29,7 @@ import telegram.ext
 
 class BaseCommand(object):
     command_name: Optional[str] = None
+    description: Optional[str] = None
 
     def __init__(self,
                  bot: 'Bot'):

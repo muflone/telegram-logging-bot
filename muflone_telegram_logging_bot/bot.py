@@ -28,6 +28,7 @@ class Bot:
                  token: str):
         self.application = None
         self.telegram_token = token
+        self.commands = None
 
     def run(self) -> None:
         """
@@ -38,7 +39,8 @@ class Bot:
                             .build()
                             )
         # Load commands
-        for command_name, command in BaseCommand.load_commands().items():
+        self.commands = BaseCommand.load_commands(bot=self)
+        for command_name, command in self.commands.items():
             self.application.add_handler(handler=telegram.ext.CommandHandler(
                 command=command_name,
                 callback=command.execute))

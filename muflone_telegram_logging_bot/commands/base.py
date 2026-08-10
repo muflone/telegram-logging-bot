@@ -30,8 +30,9 @@ import telegram.ext
 class BaseCommand(object):
     command_name: Optional[str] = None
 
-    def __init__(self):
-        pass
+    def __init__(self,
+                 bot: 'Bot'):
+        self.bot = bot
 
     def get_reply_text(self,
                        update: telegram.Update,
@@ -58,7 +59,7 @@ class BaseCommand(object):
             await update.message.reply_text(reply_text)
 
     @staticmethod
-    def load_commands() -> dict[str, Self]:
+    def load_commands(bot: 'Bot') -> dict[str, Self]:
         """
         Discover and instantiate all commands available in this package.
         """
@@ -77,7 +78,7 @@ class BaseCommand(object):
                 elif command_class.__module__ != module.__name__:
                     continue
                 # Instance the plugin module
-                command = command_class()
+                command = command_class(bot=bot)
                 if not command.command_name:
                     raise ValueError(
                         f'Command class {command_class.__name__} '

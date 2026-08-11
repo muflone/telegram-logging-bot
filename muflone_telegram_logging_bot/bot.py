@@ -27,17 +27,19 @@ class Bot:
     def __init__(self,
                  token: str):
         self.application = None
+        self.bot = None
         self.telegram_token = token
         self.commands = None
 
     def run(self) -> None:
         """
-        Run the bot.
+        Run the bot
         """
         self.application = (telegram.ext.Application.builder()
                             .token(token=self.telegram_token)
                             .build()
                             )
+        self.bot = self.application.bot
         # Load commands
         self.commands = BaseCommand.load_commands(bot=self)
         for command_name, command in self.commands.items():

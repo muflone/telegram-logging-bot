@@ -30,7 +30,7 @@ class Database(object):
                  filepath: pathlib.Path):
         self.filepath = filepath
         # Open database connection and create the needed tables
-        self.create_schema()
+        self.update_schema()
 
     def open(self) -> sqlite3.Connection:
         """
@@ -40,7 +40,7 @@ class Database(object):
         connection.row_factory = sqlite3.Row
         return connection
 
-    def create_schema(self) -> None:
+    def update_schema(self) -> None:
         """
         Create the needed tables
         """

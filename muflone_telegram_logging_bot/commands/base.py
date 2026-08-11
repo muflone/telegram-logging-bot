@@ -21,6 +21,7 @@
 import importlib
 import inspect
 import pkgutil
+import sqlite3
 from typing import Optional, Self
 
 import telegram
@@ -89,3 +90,8 @@ class BaseCommand(object):
                         f'Duplicate command name: {command.command_name}')
                 commands[command.command_name] = command
         return commands
+
+    def update_database_schema(self,
+                               connection: sqlite3.Connection,
+                               ) -> None:
+        return None

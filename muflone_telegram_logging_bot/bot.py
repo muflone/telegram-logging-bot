@@ -18,12 +18,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-import pathlib
+from typing import TYPE_CHECKING
 
 import telegram.ext
 
 from .commands.base import BaseCommand
 from .databases import Databases
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 class Bot:

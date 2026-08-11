@@ -18,7 +18,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-import pathlib
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 class Databases(object):

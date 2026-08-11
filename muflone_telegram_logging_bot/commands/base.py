@@ -21,11 +21,16 @@
 import importlib
 import inspect
 import pkgutil
-import sqlite3
-from typing import Optional, Self
+from typing import TYPE_CHECKING
 
-import telegram
-import telegram.ext
+if TYPE_CHECKING:
+    import sqlite3
+    from typing import Optional, Self
+
+    import telegram
+    import telegram.ext
+
+    from ..bot import Bot
 
 
 class BaseCommand(object):
@@ -33,7 +38,7 @@ class BaseCommand(object):
     description: Optional[str] = None
 
     def __init__(self,
-                 bot: 'Bot'):
+                 bot: Bot):
         self.bot = bot
 
     def get_reply_text(self,

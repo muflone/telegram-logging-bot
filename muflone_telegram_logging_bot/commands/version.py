@@ -18,14 +18,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-from typing import Optional
-
-import telegram
-import telegram.ext
+from typing import TYPE_CHECKING
 
 from .base import BaseCommand
 
 from ..constants import APP_VERSION
+
+if TYPE_CHECKING:
+    from typing import Optional
+
+    import telegram
+    import telegram.ext
 
 
 class CommandVersion(BaseCommand):

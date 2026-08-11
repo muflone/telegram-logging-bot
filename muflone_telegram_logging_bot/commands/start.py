@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class CommandStart(BaseCommand):
-    command_name: Optional[str] = 'start'
+    trigger: Optional[str] = 'start'
     description: Optional[str] = None
 
     def get_reply_text(self,

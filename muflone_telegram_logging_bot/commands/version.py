@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class CommandVersion(BaseCommand):
-    command_name: Optional[str] = 'version'
+    trigger: Optional[str] = 'version'
     description: Optional[str] = 'Get the bot version'
 
     def get_reply_text(self,

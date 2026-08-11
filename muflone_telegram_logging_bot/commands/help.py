@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class CommandHelp(BaseCommand):
-    command_name: Optional[str] = 'help'
+    trigger: Optional[str] = 'help'
     description: Optional[str] = None
 
     def get_reply_text(self,
@@ -41,8 +41,8 @@ class CommandHelp(BaseCommand):
                        ) -> Optional[str]:
         commands_description = []
         for command in self.bot.commands.values():
-            if command.command_name and command.description:
+            if command.trigger and command.description:
                 commands_description.append(
-                    f'/{command.command_name}\n'
+                    f'/{command.trigger}\n'
                     f'{command.description}\n')
         return '\n'.join(commands_description)

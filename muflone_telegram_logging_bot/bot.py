@@ -52,7 +52,7 @@ class Bot:
         # Set commands
         for command in self.commands.values():
             self.application.add_handler(handler=telegram.ext.CommandHandler(
-                command=command.command_name,
+                command=command.trigger,
                 callback=command.execute))
         # Run the bot
         self.application.run_polling(

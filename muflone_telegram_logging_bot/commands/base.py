@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class BaseCommand(object):
-    command_name: Optional[str] = None
+    trigger: Optional[str] = None
     description: Optional[str] = None
 
     def __init__(self,
@@ -87,9 +87,9 @@ class BaseCommand(object):
                     continue
                 # Instance the plugin module
                 command = command_class(bot=bot)
-                if command.command_name in commands:
+                if command.trigger in commands:
                     raise ValueError(
-                        f'Duplicate command name: {command.command_name}')
+                        f'Duplicate command name: {command.trigger}')
                 commands[command_class.__name__] = command
         return commands
 

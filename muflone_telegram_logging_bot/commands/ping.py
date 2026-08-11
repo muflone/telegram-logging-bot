@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class CommandPing(BaseCommand):
-    command_name: Optional[str] = 'ping'
+    trigger: Optional[str] = 'ping'
     description: Optional[str] = 'Ping if the bot is alive'
 
     def get_reply_text(self,

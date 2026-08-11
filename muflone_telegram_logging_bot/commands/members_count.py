@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class CommandMembersCount(BaseCommand):
-    command_name: Optional[str] = 'members_count'
+    trigger: Optional[str] = 'members_count'
     description: Optional[str] = 'Collect members count statistics'
 
     def get_reply_text(self,
@@ -54,7 +54,7 @@ class CommandMembersCount(BaseCommand):
         """
         Get reply text and send response
         """
-        await self.collect_members_count(source=f'/{self.command_name}')
+        await self.collect_members_count(source=f'/{self.trigger}')
         return await super().execute(update=update,
                                      context=context,
                                      args=args,

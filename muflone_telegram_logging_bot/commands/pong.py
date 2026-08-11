@@ -39,4 +39,9 @@ class CommandPong(BaseCommand):
                        *args,
                        **kwargs
                        ) -> Optional[str]:
+        """
+        Get text to reply for trigger
+
+        :return: returned string
+        """
         return 'PING!'

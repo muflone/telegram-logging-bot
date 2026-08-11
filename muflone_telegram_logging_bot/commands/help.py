@@ -39,6 +39,11 @@ class CommandHelp(BaseCommand):
                        *args,
                        **kwargs
                        ) -> Optional[str]:
+        """
+        Get text to reply for trigger
+
+        :return: returned string
+        """
         commands_description = []
         for command in self.bot.commands.values():
             if command.trigger and command.description:

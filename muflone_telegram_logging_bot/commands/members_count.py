@@ -43,6 +43,11 @@ class CommandMembersCount(BaseCommand):
                        *args,
                        **kwargs
                        ) -> Optional[str]:
+        """
+        Get text to reply for trigger
+
+        :return: returned string
+        """
         return 'Members count statistics collected'
 
     async def execute(self,
@@ -114,6 +119,11 @@ class CommandMembersCount(BaseCommand):
     def update_database_schema(self,
                                connection: sqlite3.Connection,
                                ) -> None:
+        """
+        Update database schema
+
+        :param connection: database connection
+        """
         connection.executescript(
             '''
             CREATE TABLE IF NOT EXISTS members_count (

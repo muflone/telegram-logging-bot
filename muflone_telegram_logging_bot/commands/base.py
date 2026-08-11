@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import sqlite3
-    from typing import Optional, Self
+    from typing import Callable, Optional, Self
 
     import telegram
     import telegram.ext
@@ -107,3 +107,11 @@ class BaseCommand(object):
         :param connection: database connection
         """
         return None
+
+    def get_background_tasks(self) -> tuple[Callable]:
+        """
+        Get tuple of background tasks
+
+        :return: tuple of async tasks
+        """
+        return ()

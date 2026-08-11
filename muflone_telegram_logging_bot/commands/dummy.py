@@ -18,9 +18,43 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+from typing import TYPE_CHECKING
+
 from .base import BaseCommand
+
+if TYPE_CHECKING:
+    from typing import Callable
 
 
 class CommandDummy(BaseCommand):
     trigger = 'dummy'
     description = 'Dummy command'
+
+    async def background_task_dummy1(self) -> dict[int, int]:
+        result = {}
+        for chat_id, db_path in self.bot.databases.get_known_groups().items():
+            result[chat_id] = db_path
+            print({
+                'name': f'{self.__class__.__name__}.dummy1',
+                'chat_id': chat_id,
+            })
+        return result
+
+    async def background_task_dummy2(self) -> dict[int, int]:
+        result = {}
+        for chat_id, db_path in self.bot.databases.get_known_groups().items():
+            result[chat_id] = db_path
+            print({
+                'name': f'{self.__class__.__name__}.dummy2',
+                'chat_id': chat_id,
+            })
+        return result
+
+    def get_background_tasks(self) -> tuple[Callable]:
+        """
+        Get tuple of background tasks
+
+        :return: tuple of async tasks
+        """
+        return (self.background_task_dummy1(),
+                self.background_task_dummy2())

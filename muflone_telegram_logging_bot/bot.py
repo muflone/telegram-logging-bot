@@ -38,14 +38,20 @@ class Bot:
         self.telegram_token = token
         self.commands = None
         self.databases = Databases(filepath=data_dir)
+        self.background_tasks = []
 
     def run(self) -> None:
         """
         Run the bot
         """
         self.commands = BaseCommand.load_commands(bot=self)
+        for command in self.commands.values():
+            # Collect background tasks for each command
+            if new_tasks := command.get_background_tasks():
+                self.background_tasks.extend(new_tasks)
         self.application = (telegram.ext.Application.builder()
                             .token(token=self.telegram_token)
+                            .post_init(self.start_background_tasks)
                             .build()
                             )
         self.bot = self.application.bot
@@ -57,3 +63,11 @@ class Bot:
         # Run the bot
         self.application.run_polling(
             allowed_updates=telegram.Update.ALL_TYPES)
+
+    async def start_background_tasks(self,
+                                     app: telegram.ext.Application):
+        """
+        Start all the background tasks from each command
+        """
+        for task in self.background_tasks:
+            app.create_task(task)

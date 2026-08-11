@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import asyncio
 from typing import TYPE_CHECKING
 
 import telegram
@@ -28,7 +29,7 @@ from .. import extras
 
 if TYPE_CHECKING:
     import sqlite3
-    from typing import Optional
+    from typing import Callable, Optional
 
     import telegram.ext
 
@@ -115,6 +116,18 @@ class CommandMembersCount(BaseCommand):
                 'source': source,
             })
         return result
+
+    def get_background_tasks(self) -> list[Callable]:
+        return [self.collect_members_count_hourly()]
+
+    async def collect_members_count_hourly(self) -> None:
+        """
+        Collect the members count for all the groups every hour
+        """
+        await self.collect_members_count(source='startup')
+        while True:
+            await asyncio.sleep(60 * 60)
+            await self.collect_members_count(source='hourly')
 
     def update_database_schema(self,
                                connection: sqlite3.Connection,

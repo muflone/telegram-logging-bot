@@ -43,16 +43,16 @@ class Bot:
         """
         Run the bot
         """
+        self.commands = BaseCommand.load_commands(bot=self)
         self.application = (telegram.ext.Application.builder()
                             .token(token=self.telegram_token)
                             .build()
                             )
         self.bot = self.application.bot
-        # Load commands
-        self.commands = BaseCommand.load_commands(bot=self)
-        for command_name, command in self.commands.items():
+        # Set commands
+        for command in self.commands.values():
             self.application.add_handler(handler=telegram.ext.CommandHandler(
-                command=command_name,
+                command=command.command_name,
                 callback=command.execute))
         # Run the bot
         self.application.run_polling(

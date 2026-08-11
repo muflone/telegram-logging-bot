@@ -54,28 +54,33 @@ class CommandMembersCount(BaseCommand):
         """
         Get reply text and send response
         """
-        await self.collect_all_member_count(source=f'/{self.command_name}')
+        await self.collect_members_count(source=f'/{self.command_name}')
         return await super().execute(update=update,
                                      context=context,
                                      args=args,
                                      kwargs=kwargs)
 
-    async def collect_all_member_count(self,
-                                       source: str,
-                                       ) -> dict[int, int]:
+    async def collect_members_count(self,
+                                    source: str,
+                                    ) -> dict[int, int]:
+        """
+        Collect the members count for all the groups
+        :param source: source type
+        :return: dictionary with group_id and members count
+        """
         result = {}
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
             database = Database(filepath=db_path)
             try:
-                member_count = await self.bot.bot.get_chat_member_count(
+                members_count = await self.bot.bot.get_chat_member_count(
                     chat_id=chat_id)
                 with database.open() as connection:
                     self.update_database_schema(connection=connection)
                     connection.execute(
                         '''
-                        INSERT INTO members_count__member_count (
+                        INSERT INTO members_count (
                             chat_id,
-                            member_count,
+                            total,
                             source,
                             taken_at
                         )
@@ -83,7 +88,7 @@ class CommandMembersCount(BaseCommand):
                         ''',
                         (
                             chat_id,
-                            member_count,
+                            members_count,
                             source,
                             extras.utc_now_iso(),
                         ),
@@ -91,15 +96,17 @@ class CommandMembersCount(BaseCommand):
                     connection.commit()
             except telegram.error.TelegramError as error:
                 print({
-                    'event': 'members_count_all_member_count_error',
+                    'name': self.__class__.__name__,
+                    'event': 'members_count_get_chat_member_count_error',
                     'chat_id': chat_id,
                     'error': str(error),
                 })
                 continue
-            result[chat_id] = member_count
+            result[chat_id] = members_count
             print({
+                'name': self.__class__.__name__,
                 'chat_id': chat_id,
-                'member_count': member_count,
+                'members_count': members_count,
                 'source': source,
             })
         return result
@@ -109,10 +116,10 @@ class CommandMembersCount(BaseCommand):
                                ) -> None:
         connection.executescript(
             '''
-            CREATE TABLE IF NOT EXISTS members_count__member_count (
+            CREATE TABLE IF NOT EXISTS members_count (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 chat_id INTEGER NOT NULL,
-                member_count INTEGER NOT NULL,
+                total INTEGER NOT NULL,
                 source TEXT NOT NULL,
                 taken_at TEXT NOT NULL
             );

@@ -58,6 +58,7 @@ class BaseCommand(object):
         """
         Get reply text and send response
         """
+        print(f'{self.__class__.__name__}.execute')
         reply_text = self.get_reply_text(update=update,
                                          context=context,
                                          args=args,
@@ -86,14 +87,10 @@ class BaseCommand(object):
                     continue
                 # Instance the plugin module
                 command = command_class(bot=bot)
-                if not command.command_name:
-                    raise ValueError(
-                        f'Command class {command_class.__name__} '
-                        'has no command_name')
                 if command.command_name in commands:
                     raise ValueError(
                         f'Duplicate command name: {command.command_name}')
-                commands[command.command_name] = command
+                commands[command_class.__name__] = command
         return commands
 
     def update_database_schema(self,

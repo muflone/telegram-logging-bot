@@ -18,18 +18,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import pathlib
+
 import telegram.ext
 
 from .commands.base import BaseCommand
+from .databases import Databases
 
 
 class Bot:
     def __init__(self,
-                 token: str):
+                 token: str,
+                 data_dir: pathlib.Path):
         self.application = None
         self.bot = None
         self.telegram_token = token
         self.commands = None
+        self.databases = Databases(filepath=data_dir)
 
     def run(self) -> None:
         """

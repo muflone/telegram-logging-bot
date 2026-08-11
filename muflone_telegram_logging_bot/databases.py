@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 ##
 #     Project: Telegram Logging Bot
 # Description: Telegram bot to log messages in Telegram groups
@@ -19,28 +18,27 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-import asyncio
-import logging
-import os
 import pathlib
 
-from muflone_telegram_logging_bot.bot import Bot
 
+class Databases(object):
+    def __init__(self,
+                 filepath: pathlib.Path):
+        self.data_dir = filepath / 'groups'
+        if not self.data_dir.exists():
+            self.data_dir.mkdir(parents=True)
 
-
-def main():
-    # Enable logging
-    logging.basicConfig(
-        format='%(asctime)s - %(levelname)-7s - %(name)s - %(message)s',
-        level=logging.INFO)
-    # Set higher logging level for httpx to avoid all GET and POST requests
-    # being logged
-    logging.getLogger('httpx').setLevel(logging.WARNING)
-    # Start the bot
-    bot = Bot(token=os.environ.get('TELEGRAM_TOKEN'),
-              data_dir=pathlib.Path(os.environ.get('APP_DATA_DIR', 'data')))
-    bot.run()
-
-
-if __name__ == "__main__":
-    main()
+    def get_known_groups(self) -> dict[int, pathlib.Path]:
+        result = {}
+        for group_dir in self.data_dir.iterdir():
+            if group_dir.is_dir():
+                # Get only numeric directories
+                try:
+                    chat_id = int(group_dir.name)
+                except ValueError:
+                    continue
+                # Get database path
+                db_path = group_dir / 'group.sqlite'
+                if db_path.exists():
+                    result[chat_id] = db_path
+        return result

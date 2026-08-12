@@ -54,16 +54,16 @@ class BaseCommand(object):
         """
         return None
 
-    async def execute(self,
-                      update: telegram.Update,
-                      context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                      *args,
-                      **kwargs
-                      ) -> None:
+    async def do_trigger(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         *args,
+                         **kwargs
+                         ) -> None:
         """
         Get reply text and send response
         """
-        print(f'{self.__class__.__name__}.execute')
+        print(f'{self.__class__.__name__}.do_trigger')
         reply_text = await self.get_reply_text(update=update,
                                                context=context,
                                                args=args,

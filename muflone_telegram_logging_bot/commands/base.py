@@ -102,8 +102,10 @@ class BaseCommand(object):
             self.bot.triggers[trigger.trigger] = trigger
             logging.info(f'Setup trigger /{trigger.trigger} '
                          f'for {self.__class__.__name__}')
-            app.add_handler(handler=telegram.ext.CommandHandler(
-                command=trigger.trigger,
-                callback=functools.partial(trigger.callback,
-                                           trigger=trigger)
-            ))
+            app.add_handler(
+                handler=telegram.ext.CommandHandler(
+                    command=trigger.trigger,
+                    callback=functools.partial(trigger.callback,
+                                               trigger=trigger)),
+                group=self.bot.next_handler_group)
+        self.bot.next_handler_group += 1

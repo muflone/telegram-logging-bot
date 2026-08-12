@@ -41,6 +41,7 @@ class Bot:
         self.databases = Databases(filepath=data_dir)
         self.triggers = {}
         self.background_tasks = []
+        self.next_handler_group = 1
 
     def run(self) -> None:
         """

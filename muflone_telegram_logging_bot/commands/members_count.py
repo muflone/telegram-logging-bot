@@ -111,9 +111,11 @@ class CommandMembersCount(BaseCommand):
 
         :return: tuple of async tasks
         """
-        return (self.collect_members_count_hourly,)
+        return (
+            self.do_collect_members_count_hourly,
+        )
 
-    async def collect_members_count_hourly(self) -> None:
+    async def do_collect_members_count_hourly(self) -> None:
         """
         Collect the members count for all the groups every hour
         """

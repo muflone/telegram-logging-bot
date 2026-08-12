@@ -31,25 +31,27 @@ class CommandDummy(BaseCommand):
     trigger = 'dummy'
     description = 'Dummy command'
 
-    async def background_task_dummy1(self) -> None:
-        for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            logging.info({
-                'name': f'{self.__class__.__name__}.dummy1',
-                'chat_id': chat_id,
-            })
-
-    async def background_task_dummy2(self) -> None:
-        for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            logging.info({
-                'name': f'{self.__class__.__name__}.dummy2',
-                'chat_id': chat_id,
-            })
-
     def get_background_tasks(self) -> tuple[Callable]:
         """
         Get background tasks
 
         :return: tuple of async tasks
         """
-        return (self.background_task_dummy1,
-                self.background_task_dummy2)
+        return (
+            self.do_background_task_dummy1,
+            self.do_background_task_dummy2,
+        )
+
+    async def do_background_task_dummy1(self) -> None:
+        for chat_id, db_path in self.bot.databases.get_known_groups().items():
+            logging.info({
+                'name': f'{self.__class__.__name__}.do_background_task_dummy1',
+                'chat_id': chat_id,
+            })
+
+    async def do_background_task_dummy2(self) -> None:
+        for chat_id, db_path in self.bot.databases.get_known_groups().items():
+            logging.info({
+                'name': f'{self.__class__.__name__}.do_background_task_dummy2',
+                'chat_id': chat_id,
+            })

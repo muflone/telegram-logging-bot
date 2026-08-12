@@ -38,12 +38,12 @@ class CommandMembersCount(BaseCommand):
     trigger: Optional[str] = 'members_count'
     description: Optional[str] = 'Collect members count statistics'
 
-    def get_reply_text(self,
-                       update: telegram.Update,
-                       context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                       *args,
-                       **kwargs
-                       ) -> Optional[str]:
+    async def get_reply_text(self,
+                             update: telegram.Update,
+                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                             *args,
+                             **kwargs
+                             ) -> Optional[str]:
         """
         Get text to reply for trigger
 

@@ -33,12 +33,12 @@ class CommandPong(BaseCommand):
     trigger: Optional[str] = 'pong'
     description: Optional[str] = 'Pong if the bot is alive'
 
-    def get_reply_text(self,
-                       update: telegram.Update,
-                       context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                       *args,
-                       **kwargs
-                       ) -> Optional[str]:
+    async def get_reply_text(self,
+                             update: telegram.Update,
+                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                             *args,
+                             **kwargs
+                             ) -> Optional[str]:
         """
         Get text to reply for trigger
 

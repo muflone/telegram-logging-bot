@@ -41,12 +41,12 @@ class BaseCommand(object):
                  bot: Bot):
         self.bot = bot
 
-    def get_reply_text(self,
-                       update: telegram.Update,
-                       context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                       *args,
-                       **kwargs
-                       ) -> Optional[str]:
+    async def get_reply_text(self,
+                             update: telegram.Update,
+                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                             *args,
+                             **kwargs
+                             ) -> Optional[str]:
         """
         Get text to reply for trigger
 
@@ -64,10 +64,10 @@ class BaseCommand(object):
         Get reply text and send response
         """
         print(f'{self.__class__.__name__}.execute')
-        reply_text = self.get_reply_text(update=update,
-                                         context=context,
-                                         args=args,
-                                         kwargs=kwargs)
+        reply_text = await self.get_reply_text(update=update,
+                                               context=context,
+                                               args=args,
+                                               kwargs=kwargs)
         if reply_text is not None:
             await update.message.reply_text(reply_text)
 

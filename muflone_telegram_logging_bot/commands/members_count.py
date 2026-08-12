@@ -117,8 +117,13 @@ class CommandMembersCount(BaseCommand):
             })
         return result
 
-    def get_background_tasks(self) -> list[Callable]:
-        return [self.collect_members_count_hourly()]
+    def get_background_tasks(self) -> tuple[Callable]:
+        """
+        Get background tasks
+
+        :return: tuple of async tasks
+        """
+        return (self.collect_members_count_hourly(),)
 
     async def collect_members_count_hourly(self) -> None:
         """

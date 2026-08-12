@@ -110,7 +110,7 @@ class BaseCommand(object):
 
     def get_background_tasks(self) -> tuple[Callable]:
         """
-        Get tuple of background tasks
+        Get background tasks
 
         :return: tuple of async tasks
         """

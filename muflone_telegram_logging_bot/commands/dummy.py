@@ -30,29 +30,23 @@ class CommandDummy(BaseCommand):
     trigger = 'dummy'
     description = 'Dummy command'
 
-    async def background_task_dummy1(self) -> dict[int, int]:
-        result = {}
+    async def background_task_dummy1(self) -> None:
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            result[chat_id] = db_path
             print({
                 'name': f'{self.__class__.__name__}.dummy1',
                 'chat_id': chat_id,
             })
-        return result
 
-    async def background_task_dummy2(self) -> dict[int, int]:
-        result = {}
+    async def background_task_dummy2(self) -> None:
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            result[chat_id] = db_path
             print({
                 'name': f'{self.__class__.__name__}.dummy2',
                 'chat_id': chat_id,
             })
-        return result
 
     def get_background_tasks(self) -> tuple[Callable]:
         """
-        Get tuple of background tasks
+        Get background tasks
 
         :return: tuple of async tasks
         """

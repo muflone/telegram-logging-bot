@@ -18,10 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import pathlib
+import pathlib
 
 
 class Databases(object):
@@ -41,7 +38,11 @@ class Databases(object):
                 except ValueError:
                     continue
                 # Get database path
-                db_path = group_dir / 'group.sqlite'
+                db_path = self.get_database_path(filename=group_dir.name)
                 if db_path.exists():
                     result[chat_id] = db_path
         return result
+
+    def get_database_path(self,
+                          filename: str) -> pathlib.Path:
+        return pathlib.Path(self.data_dir / filename / 'data.sqlite')

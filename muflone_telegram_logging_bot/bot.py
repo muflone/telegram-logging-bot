@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import asyncio
 from typing import TYPE_CHECKING
 
 import telegram.ext
@@ -68,4 +69,4 @@ class Bot:
         Start all the background tasks from each command
         """
         for task in self.background_tasks:
-            app.create_task(task)
+            asyncio.create_task(task())

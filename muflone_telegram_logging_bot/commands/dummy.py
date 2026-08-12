@@ -51,5 +51,5 @@ class CommandDummy(BaseCommand):
 
         :return: tuple of async tasks
         """
-        return (self.background_task_dummy1(),
-                self.background_task_dummy2())
+        return (self.background_task_dummy1,
+                self.background_task_dummy2)

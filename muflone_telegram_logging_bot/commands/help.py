@@ -21,33 +21,36 @@
 from typing import TYPE_CHECKING
 
 from .base import BaseCommand
+from ..trigger import Trigger
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     import telegram
     import telegram.ext
 
 
 class CommandHelp(BaseCommand):
-    trigger: Optional[str] = 'help'
-    description: Optional[str] = None
-
-    async def get_reply_text(self,
-                             update: telegram.Update,
-                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                             *args,
-                             **kwargs
-                             ) -> Optional[str]:
+    def get_triggers(self) -> tuple[Trigger]:
         """
-        Get text to reply for trigger
+        Get triggers and callbacks
 
-        :return: returned string
+        :return: tuple of Trigger
         """
+        return (
+            Trigger(trigger='help',
+                    description=None,
+                    callback=self.do_trigger),
+        )
+
+    @BaseCommand.call_trigger
+    async def do_trigger(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         trigger: Trigger,
+                         ) -> None:
         commands_description = []
-        for command in self.bot.commands.values():
-            if command.trigger and command.description:
+        for trigger in self.bot.triggers.values():
+            if trigger.trigger and trigger.description:
                 commands_description.append(
-                    f'/{command.trigger}\n'
-                    f'{command.description}\n')
-        return '\n'.join(commands_description)
+                    f'/{trigger.trigger}\n'
+                    f'{trigger.description}\n')
+        await update.message.reply_text('\n'.join(commands_description))

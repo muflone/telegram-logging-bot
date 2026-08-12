@@ -18,35 +18,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .base import BaseCommand
-
-from ..constants import APP_VERSION
-from ..trigger import Trigger
 
 if TYPE_CHECKING:
-    import telegram
-    import telegram.ext
+    from typing import Callable
 
 
-class CommandVersion(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
-        """
-        Get triggers and callbacks
-
-        :return: tuple of Trigger
-        """
-        return (
-            Trigger(trigger='version',
-                    description='Get the bot version',
-                    callback=self.do_trigger),
-        )
-
-    @BaseCommand.call_trigger
-    async def do_trigger(self,
-                         update: telegram.Update,
-                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
-                         ) -> None:
-        await update.message.reply_text(APP_VERSION)
+@dataclass
+class Trigger:
+    trigger: str
+    description: str
+    callback: Callable

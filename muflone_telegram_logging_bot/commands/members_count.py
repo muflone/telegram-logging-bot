@@ -26,32 +26,38 @@ import telegram
 
 from .base import BaseCommand
 from ..database import Database
+from ..trigger import Trigger
 from .. import extras
 
 if TYPE_CHECKING:
     import sqlite3
-    from typing import Callable, Optional
+    from typing import Callable
 
     import telegram.ext
 
 
 class CommandMembersCount(BaseCommand):
-    trigger: Optional[str] = 'members_count'
-    description: Optional[str] = 'Collect members count statistics'
-
-    async def get_reply_text(self,
-                             update: telegram.Update,
-                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                             *args,
-                             **kwargs
-                             ) -> Optional[str]:
+    def get_triggers(self) -> tuple[Trigger]:
         """
-        Get text to reply for trigger
+        Get triggers and callbacks
 
-        :return: returned string
+        :return: tuple of Trigger
         """
-        result = await self.collect_members_count(source=f'/{self.trigger}')
-        return f'Members count statistics collected: {result}'
+        return (
+            Trigger(trigger='members_count',
+                    description='Collect members count statistics',
+                    callback=self.do_trigger),
+        )
+
+    @BaseCommand.call_trigger
+    async def do_trigger(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         trigger: Trigger,
+                         ) -> None:
+        result = await self.collect_members_count(source='trigger')
+        await update.message.reply_text(
+            f'Members count statistics collected: {result}')
 
     async def collect_members_count(self,
                                     source: str,

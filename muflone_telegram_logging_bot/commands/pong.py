@@ -21,27 +21,30 @@
 from typing import TYPE_CHECKING
 
 from .base import BaseCommand
+from ..trigger import Trigger
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     import telegram
     import telegram.ext
 
 
 class CommandPong(BaseCommand):
-    trigger: Optional[str] = 'pong'
-    description: Optional[str] = 'Pong if the bot is alive'
-
-    async def get_reply_text(self,
-                             update: telegram.Update,
-                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                             *args,
-                             **kwargs
-                             ) -> Optional[str]:
+    def get_triggers(self) -> tuple[Trigger]:
         """
-        Get text to reply for trigger
+        Get triggers and callbacks
 
-        :return: returned string
+        :return: tuple of Trigger
         """
-        return 'PING!'
+        return (
+            Trigger(trigger='pong',
+                    description='Pong if the bot is alive',
+                    callback=self.do_trigger),
+        )
+
+    @BaseCommand.call_trigger
+    async def do_trigger(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         trigger: Trigger,
+                         ) -> None:
+        await update.message.reply_text('PING!')

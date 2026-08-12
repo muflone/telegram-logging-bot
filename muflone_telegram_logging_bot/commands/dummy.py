@@ -21,15 +21,46 @@
 import logging
 from typing import TYPE_CHECKING
 
+import telegram.ext
+
 from .base import BaseCommand
+from ..trigger import Trigger
 
 if TYPE_CHECKING:
     from typing import Callable
 
 
 class CommandDummy(BaseCommand):
-    trigger = 'dummy'
-    description = 'Dummy command'
+    def get_triggers(self) -> tuple[Trigger]:
+        """
+        Get triggers and callbacks
+
+        :return: tuple of Trigger
+        """
+        return (
+            Trigger(trigger='dummy1',
+                    description='Dummy command',
+                    callback=self.do_trigger_1),
+            Trigger(trigger='dummy2',
+                    description='Dummy command',
+                    callback=self.do_trigger_2),
+        )
+
+    @BaseCommand.call_trigger
+    async def do_trigger_1(self,
+                           update: telegram.Update,
+                           context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                           trigger: Trigger,
+                           ) -> None:
+        await update.message.reply_text('dummy1')
+
+    @BaseCommand.call_trigger
+    async def do_trigger_2(self,
+                           update: telegram.Update,
+                           context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                           trigger: Trigger,
+                           ) -> None:
+        await update.message.reply_text('dummy2')
 
     def get_background_tasks(self) -> tuple[Callable]:
         """

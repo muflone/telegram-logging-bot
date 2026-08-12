@@ -39,6 +39,7 @@ class Bot:
         self.telegram_token = token
         self.commands = None
         self.databases = Databases(filepath=data_dir)
+        self.triggers = {}
         self.background_tasks = []
 
     def run(self) -> None:

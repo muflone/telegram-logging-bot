@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import functools
 import importlib
 import inspect
 import logging
@@ -26,8 +27,10 @@ from typing import TYPE_CHECKING
 
 import telegram.ext
 
+from ..trigger import Trigger
+
 if TYPE_CHECKING:
-    from typing import Callable, Optional, Self
+    from typing import Callable, Self
 
     import telegram
 
@@ -35,42 +38,9 @@ if TYPE_CHECKING:
 
 
 class BaseCommand(object):
-    trigger: Optional[str] = None
-    description: Optional[str] = None
-
     def __init__(self,
                  bot: Bot):
         self.bot = bot
-
-    async def get_reply_text(self,
-                             update: telegram.Update,
-                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                             *args,
-                             **kwargs
-                             ) -> Optional[str]:
-        """
-        Get text to reply for trigger
-
-        :return: returned string
-        """
-        return None
-
-    async def do_trigger(self,
-                         update: telegram.Update,
-                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         *args,
-                         **kwargs
-                         ) -> None:
-        """
-        Get reply text and send response
-        """
-        logging.info(f'{self.__class__.__name__}.do_trigger')
-        reply_text = await self.get_reply_text(update=update,
-                                               context=context,
-                                               args=args,
-                                               kwargs=kwargs)
-        if reply_text is not None:
-            await update.message.reply_text(reply_text)
 
     @staticmethod
     def load_commands(bot: 'Bot') -> dict[str, Self]:
@@ -93,11 +63,24 @@ class BaseCommand(object):
                     continue
                 # Instance the plugin module
                 command = command_class(bot=bot)
-                if command.trigger in commands:
-                    raise ValueError(
-                        f'Duplicate command name: {command.trigger}')
                 commands[command_class.__name__] = command
         return commands
+
+    def get_triggers(self) -> tuple[Trigger]:
+        """
+        Get triggers and callbacks
+
+        :return: tuple of Trigger
+        """
+        return ()
+
+    def call_trigger(callback: Callable) -> Callable:
+        @functools.wraps(callback)
+        def wrapper(*args, **kwargs):
+            command = args[0]
+            logging.info(f'{command.__class__.__name__}.{callback.__name__}')
+            return callback(*args, **kwargs)
+        return wrapper
 
     def get_background_tasks(self) -> tuple[Callable]:
         """
@@ -112,6 +95,15 @@ class BaseCommand(object):
         """
         Setup command logic
         """
-        app.add_handler(handler=telegram.ext.CommandHandler(
-            command=self.trigger,
-            callback=self.do_trigger))
+        for trigger in self.get_triggers():
+            if trigger.trigger in self.bot.triggers:
+                raise ValueError(
+                    f'Duplicate command name: {trigger.trigger}')
+            self.bot.triggers[trigger.trigger] = trigger
+            logging.info(f'Setup trigger /{trigger.trigger} '
+                         f'for {self.__class__.__name__}')
+            app.add_handler(handler=telegram.ext.CommandHandler(
+                command=trigger.trigger,
+                callback=functools.partial(trigger.callback,
+                                           trigger=trigger)
+            ))

@@ -23,12 +23,13 @@ import inspect
 import pkgutil
 from typing import TYPE_CHECKING
 
+import telegram.ext
+
 if TYPE_CHECKING:
     import sqlite3
     from typing import Callable, Optional, Self
 
     import telegram
-    import telegram.ext
 
     from ..bot import Bot
 
@@ -115,3 +116,12 @@ class BaseCommand(object):
         :return: tuple of async tasks
         """
         return ()
+
+    def setup(self,
+              app: telegram.ext.Application) -> None:
+        """
+        Setup command logic
+        """
+        app.add_handler(handler=telegram.ext.CommandHandler(
+            command=self.trigger,
+            callback=self.do_trigger))

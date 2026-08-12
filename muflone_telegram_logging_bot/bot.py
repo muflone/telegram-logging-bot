@@ -55,11 +55,9 @@ class Bot:
                             .build()
                             )
         self.bot = self.application.bot
-        # Set commands
+        # Setup commands
         for command in self.commands.values():
-            self.application.add_handler(handler=telegram.ext.CommandHandler(
-                command=command.trigger,
-                callback=command.do_trigger))
+            command.setup(app=self.application)
         # Run the bot
         self.application.run_polling(
             allowed_updates=telegram.Update.ALL_TYPES)

@@ -19,6 +19,7 @@
 ##
 
 import asyncio
+import logging
 from typing import TYPE_CHECKING
 
 import telegram
@@ -60,6 +61,7 @@ class CommandMembersCount(BaseCommand):
         :param source: source type
         :return: dictionary with group_id and members count
         """
+        logging.info(f'{self.__class__.__name__}.collect_members_count')
         result = {}
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
             database = Database(filepath=db_path)
@@ -87,7 +89,7 @@ class CommandMembersCount(BaseCommand):
                     )
                     connection.commit()
             except telegram.error.TelegramError as error:
-                print({
+                logging.error({
                     'name': self.__class__.__name__,
                     'event': 'members_count_get_chat_member_count_error',
                     'chat_id': chat_id,
@@ -95,7 +97,7 @@ class CommandMembersCount(BaseCommand):
                 })
                 continue
             result[chat_id] = members_count
-            print({
+            logging.info({
                 'name': self.__class__.__name__,
                 'chat_id': chat_id,
                 'members_count': members_count,

@@ -20,6 +20,7 @@
 
 import importlib
 import inspect
+import logging
 import pkgutil
 from typing import TYPE_CHECKING
 
@@ -64,7 +65,7 @@ class BaseCommand(object):
         """
         Get reply text and send response
         """
-        print(f'{self.__class__.__name__}.do_trigger')
+        logging.info(f'{self.__class__.__name__}.do_trigger')
         reply_text = await self.get_reply_text(update=update,
                                                context=context,
                                                args=args,

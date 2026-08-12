@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import logging
 from typing import TYPE_CHECKING
 
 from .base import BaseCommand
@@ -32,14 +33,14 @@ class CommandDummy(BaseCommand):
 
     async def background_task_dummy1(self) -> None:
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            print({
+            logging.info({
                 'name': f'{self.__class__.__name__}.dummy1',
                 'chat_id': chat_id,
             })
 
     async def background_task_dummy2(self) -> None:
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            print({
+            logging.info({
                 'name': f'{self.__class__.__name__}.dummy2',
                 'chat_id': chat_id,
             })

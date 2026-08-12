@@ -20,6 +20,8 @@
 
 import pathlib
 
+from .database import Database
+
 
 class Databases(object):
     def __init__(self,
@@ -46,3 +48,7 @@ class Databases(object):
     def get_database_path(self,
                           filename: str) -> pathlib.Path:
         return pathlib.Path(self.data_dir / filename / 'data.sqlite')
+
+    def get_database(self,
+                     filename: str):
+        return Database(filepath=self.get_database_path(filename=filename))

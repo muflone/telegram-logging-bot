@@ -49,22 +49,8 @@ class CommandMembersCount(BaseCommand):
 
         :return: returned string
         """
-        return 'Members count statistics collected'
-
-    async def execute(self,
-                      update: telegram.Update,
-                      context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                      *args,
-                      **kwargs
-                      ) -> None:
-        """
-        Get reply text and send response
-        """
-        await self.collect_members_count(source=f'/{self.trigger}')
-        return await super().execute(update=update,
-                                     context=context,
-                                     args=args,
-                                     kwargs=kwargs)
+        result = await self.collect_members_count(source=f'/{self.trigger}')
+        return f'Members count statistics collected: {result}'
 
     async def collect_members_count(self,
                                     source: str,

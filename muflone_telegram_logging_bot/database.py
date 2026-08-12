@@ -29,6 +29,8 @@ class Database(object):
     def __init__(self,
                  filepath: pathlib.Path):
         self.filepath = filepath
+        if not self.filepath.exists():
+            self.filepath.parent.mkdir(parents=True)
         # Open database connection and create the needed tables
         self.update_schema()
 

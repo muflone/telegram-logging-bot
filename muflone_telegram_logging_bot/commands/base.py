@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 import telegram.ext
 
 if TYPE_CHECKING:
-    import sqlite3
     from typing import Callable, Optional, Self
 
     import telegram
@@ -99,16 +98,6 @@ class BaseCommand(object):
                         f'Duplicate command name: {command.trigger}')
                 commands[command_class.__name__] = command
         return commands
-
-    def update_database_schema(self,
-                               connection: sqlite3.Connection,
-                               ) -> None:
-        """
-        Update database schema
-
-        :param connection: database connection
-        """
-        return None
 
     def get_background_tasks(self) -> tuple[Callable]:
         """

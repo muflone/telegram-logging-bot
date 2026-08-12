@@ -141,4 +141,3 @@ class CommandMembersCount(BaseCommand):
             );
             '''
         )
-        return super().update_database_schema(connection=connection)

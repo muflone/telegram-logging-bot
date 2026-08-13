@@ -103,6 +103,44 @@ class CommandGroups(BaseCommand):
                                       user=user)
                     connection.commit()
 
+    def save_chat(self,
+                  connection: sqlite3.Connection,
+                  chat: telegram.Chat,
+                  ) -> None:
+        """
+        Save the chat information to database
+
+        :param connection: database connection
+        :param chat: chat details
+        """
+        now = extras.utc_now_iso()
+        connection.execute(
+            '''
+            INSERT INTO chat (
+                chat_id,
+                type,
+                title,
+                username,
+                first_seen_at,
+                last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(chat_id) DO UPDATE SET
+                type = excluded.type,
+                title = excluded.title,
+                username = excluded.username,
+                last_seen_at = excluded.last_seen_at
+            ''',
+            (
+                chat.id,
+                chat.type,
+                chat.title,
+                chat.username,
+                now,
+                now,
+            )
+        )
+
     def save_message(self,
                      connection: sqlite3.Connection,
                      chat: telegram.Chat,
@@ -162,44 +200,6 @@ class CommandGroups(BaseCommand):
                     1 if edit_date else 0,
                 )
             )
-
-    def save_chat(self,
-                  connection: sqlite3.Connection,
-                  chat: telegram.Chat,
-                  ) -> None:
-        """
-        Save the chat information to database
-
-        :param connection: database connection
-        :param chat: chat details
-        """
-        now = extras.utc_now_iso()
-        connection.execute(
-            '''
-            INSERT INTO chat (
-                chat_id,
-                type,
-                title,
-                username,
-                first_seen_at,
-                last_seen_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT(chat_id) DO UPDATE SET
-                type = excluded.type,
-                title = excluded.title,
-                username = excluded.username,
-                last_seen_at = excluded.last_seen_at
-            ''',
-            (
-                chat.id,
-                chat.type,
-                chat.title,
-                chat.username,
-                now,
-                now,
-            )
-        )
 
     def update_database_schema(self,
                                connection: sqlite3.Connection,

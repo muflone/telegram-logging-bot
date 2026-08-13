@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 import telegram
 
 from .base import BaseCommand
+from .. import extras
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
@@ -94,6 +95,8 @@ class CommandGroups(BaseCommand):
                     filename=str(chat.id))
                 with database.open() as connection:
                     self.update_database_schema(connection=connection)
+                    self.save_chat(connection=connection,
+                                   chat=chat)
                     self.save_message(connection=connection,
                                       chat=chat,
                                       message=message,
@@ -160,6 +163,44 @@ class CommandGroups(BaseCommand):
                 )
             )
 
+    def save_chat(self,
+                  connection: sqlite3.Connection,
+                  chat: telegram.Chat,
+                  ) -> None:
+        """
+        Save the chat information to database
+
+        :param connection: database connection
+        :param chat: chat details
+        """
+        now = extras.utc_now_iso()
+        connection.execute(
+            '''
+            INSERT INTO chat (
+                chat_id,
+                type,
+                title,
+                username,
+                first_seen_at,
+                last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(chat_id) DO UPDATE SET
+                type = excluded.type,
+                title = excluded.title,
+                username = excluded.username,
+                last_seen_at = excluded.last_seen_at
+            ''',
+            (
+                chat.id,
+                chat.type,
+                chat.title,
+                chat.username,
+                now,
+                now,
+            )
+        )
+
     def update_database_schema(self,
                                connection: sqlite3.Connection,
                                ) -> None:
@@ -170,6 +211,15 @@ class CommandGroups(BaseCommand):
         """
         connection.executescript(
             '''
+            CREATE TABLE IF NOT EXISTS chat (
+                chat_id INTEGER PRIMARY KEY,
+                type TEXT NOT NULL,
+                title TEXT,
+                username TEXT,
+                first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL
+            );
+
             CREATE TABLE IF NOT EXISTS messages (
                 chat_id INTEGER NOT NULL,
                 message_id INTEGER NOT NULL,

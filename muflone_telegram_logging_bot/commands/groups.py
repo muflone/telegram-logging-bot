@@ -97,6 +97,8 @@ class CommandGroups(BaseCommand):
                     self.update_database_schema(connection=connection)
                     self.save_chat(connection=connection,
                                    chat=chat)
+                    self.save_user(connection=connection,
+                                   user=user)
                     self.save_message(connection=connection,
                                       chat=chat,
                                       message=message,
@@ -139,6 +141,48 @@ class CommandGroups(BaseCommand):
                 now,
                 now,
             )
+        )
+
+    def save_user(self,
+                  connection: sqlite3.Connection,
+                  user: telegram.User,
+                  ) -> None:
+        """
+        Save the user information to database
+
+        :param connection: database connection
+        :param user: user details
+        """
+        now = extras.utc_now_iso()
+        connection.execute(
+            '''
+            INSERT INTO users (
+                user_id,
+                is_bot,
+                username,
+                first_name,
+                last_name,
+                language_code,
+                last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                is_bot = excluded.is_bot,
+                username = excluded.username,
+                first_name = excluded.first_name,
+                last_name = excluded.last_name,
+                language_code = excluded.language_code,
+                last_seen_at = excluded.last_seen_at
+            ''',
+            (
+                user.id,
+                1 if user.is_bot else 0,
+                user.username,
+                user.first_name,
+                user.last_name,
+                user.language_code,
+                now,
+            ),
         )
 
     def save_message(self,
@@ -217,6 +261,16 @@ class CommandGroups(BaseCommand):
                 title TEXT,
                 username TEXT,
                 first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                is_bot INTEGER NOT NULL DEFAULT 0,
+                username TEXT,
+                first_name TEXT,
+                last_name TEXT,
+                language_code TEXT,
                 last_seen_at TEXT NOT NULL
             );
 

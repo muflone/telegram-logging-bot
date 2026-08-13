@@ -31,8 +31,15 @@ from ..trigger import Trigger
 if TYPE_CHECKING:
     import telegram.ext
 
+    from ..bot import Bot
+
 
 class CommandGroups(BaseCommand):
+    def __init__(self,
+                 bot: Bot):
+        super().__init__(bot=bot)
+        self._users = {}
+
     def get_triggers(self) -> tuple[Trigger]:
         """
         Get triggers and callbacks
@@ -184,6 +191,37 @@ class CommandGroups(BaseCommand):
                 now,
             ),
         )
+        # Save user details to history
+        existing_user = self._users.get(user.id, {})
+        if not all((user.username == existing_user.get('username', ''),
+                    user.first_name == existing_user.get('first_name', ''),
+                    user.last_name == existing_user.get('last_name', ''))):
+            # Save user details to history
+            connection.execute(
+                '''
+                INSERT INTO users_history (
+                    user_id,
+                    username,
+                    first_name,
+                    last_name,
+                    created_at
+                )
+                VALUES (?, ?, ?, ?, ?)
+                ''',
+                (
+                    user.id,
+                    user.username,
+                    user.first_name,
+                    user.last_name,
+                    now,
+                ),
+            )
+            # Keep user details
+            self._users[user.id] = {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            }
 
     def save_message(self,
                      connection: sqlite3.Connection,
@@ -272,6 +310,15 @@ class CommandGroups(BaseCommand):
                 last_name TEXT,
                 language_code TEXT,
                 last_seen_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS users_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                username TEXT,
+                first_name TEXT,
+                last_name TEXT,
+                created_at TEXT NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS messages (

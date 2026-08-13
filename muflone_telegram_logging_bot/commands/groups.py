@@ -95,9 +95,7 @@ class CommandGroups(BaseCommand):
                 "date": message.date.isoformat() if message.date else None,
             })
             # Save the results
-            if chat := update.effective_chat:
-                message = update.effective_message
-                user = update.effective_user
+            if chat:
                 database = self.bot.databases.get_database(
                     filename=str(chat.id))
                 with database.open() as connection:
@@ -274,7 +272,7 @@ class CommandGroups(BaseCommand):
                     message.message_id,
                     user.id if user else None,
                     message.date.isoformat(),
-                    self._classify_message_type(message),
+                    self.get_message_type(message),
                     message.text,
                     message.caption,
                     reply_to_message_id,
@@ -337,11 +335,11 @@ class CommandGroups(BaseCommand):
             '''
         )
 
-    def _classify_message_type(self,
-                               message: telegram.Message,
-                               ) -> str:
+    def get_message_type(self,
+                         message: telegram.Message,
+                         ) -> str:
         """
-        Classify the message type by its data
+        Get the message type by its data
 
         :param message: message details
         :return: message type

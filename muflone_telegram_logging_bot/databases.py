@@ -26,7 +26,7 @@ from .database import Database
 class Databases(object):
     def __init__(self,
                  filepath: pathlib.Path):
-        self.data_dir = filepath / 'groups'
+        self.data_dir = filepath / 'chats'
         if not self.data_dir.exists():
             self.data_dir.mkdir(parents=True)
 

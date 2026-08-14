@@ -144,13 +144,17 @@ class CommandGroups(BaseCommand):
                 filename=str(chat.id))
             with database.open() as connection:
                 self.update_database_schema(connection=connection)
-                # self.save_user(connection=connection,
-                #                user=user)
                 if update.chat_member:
                     new_member = update.chat_member.new_chat_member
                     old_member = update.chat_member.old_chat_member
-                    user = new_member.user
-                    actor = update.effective_user
+                    if user := new_member.user:
+                        self.save_user(connection=connection,
+                                       user=user,
+                                       chat=chat)
+                    if actor := update.effective_user:
+                        self.save_user(connection=connection,
+                                       user=actor,
+                                       chat=chat)
                     event_type = self.get_chat_member_change_type(
                             member_update=(update.chat_member or
                                            update.my_chat_member),

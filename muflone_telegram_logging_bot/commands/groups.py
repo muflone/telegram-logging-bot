@@ -267,9 +267,9 @@ class CommandGroups(BaseCommand):
         # Save user details to history
         chat_users = self._users.setdefault(chat.id, {})
         existing_user = chat_users.get(user.id, {})
-        if not all((user.username == existing_user.get('username', ''),
-                    user.first_name == existing_user.get('first_name', ''),
-                    user.last_name == existing_user.get('last_name', ''))):
+        if not all((user.username == existing_user.get('username'),
+                    user.first_name == existing_user.get('first_name'),
+                    user.last_name == existing_user.get('last_name'))):
             # Save user details to history
             connection.execute(
                 '''

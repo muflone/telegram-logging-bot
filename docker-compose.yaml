@@ -1,0 +1,7 @@
+services:
+  bot:
+    image: ilmuflone/telegram-logging-bot:0.1.0
+    env_file:
+      - app.env
+    volumes:
+      - ./data:/data

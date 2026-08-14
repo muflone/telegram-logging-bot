@@ -26,7 +26,6 @@ import pathlib
 from muflone_telegram_logging_bot.bot import Bot
 
 
-
 def main():
     # Enable logging
     logging.basicConfig(

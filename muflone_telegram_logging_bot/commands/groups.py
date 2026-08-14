@@ -90,12 +90,12 @@ class CommandGroups(BaseCommand):
             user = update.effective_user
             actor = message.from_user
             logging.info({
-                "chat_id": chat.id if chat else None,
-                "chat_title": chat.title if chat else None,
-                "user_id": user.id if user else None,
-                "username": user.username if user else None,
-                "text": message.text,
-                "date": message.date.isoformat() if message.date else None,
+                'chat_id': chat.id if chat else None,
+                'chat_title': chat.title if chat else None,
+                'user_id': user.id if user else None,
+                'username': user.username if user else None,
+                'text': message.text,
+                'date': message.date.isoformat() if message.date else None,
             })
             # Save the results
             if chat:
@@ -118,7 +118,7 @@ class CommandGroups(BaseCommand):
                                             source='log_message',
                                             event_type='join'
                                             if actor is not None and
-                                               actor.id == member.id
+                                            actor.id == member.id
                                             else 'added',
                                             user=member,
                                             actor_user=actor,
@@ -340,7 +340,7 @@ class CommandGroups(BaseCommand):
             ''',
             (
                 chat.id,
-                message.message_id,
+                message.message_id if message else None,
                 update_id,
                 source,
                 event_type,
@@ -348,7 +348,7 @@ class CommandGroups(BaseCommand):
                 actor_user.id if actor_user else None,
                 old_status,
                 new_status,
-                message.date.isoformat() if message else None,
+                message.date.isoformat() if message else extras.utc_now_iso(),
             ),
         )
 

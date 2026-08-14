@@ -77,6 +77,12 @@ class CommandGroups(BaseCommand):
                 filters=telegram.ext.filters.ALL,
                 callback=self.log_message),
             group=self.bot.next_handler_group)
+        logging.info(f'Setup member handler for {self.__class__.__name__}')
+        app.add_handler(
+            handler=telegram.ext.ChatMemberHandler(
+                self.log_membership,
+                telegram.ext.ChatMemberHandler.ANY_CHAT_MEMBER),
+            group=self.bot.next_handler_group)
         self.bot.next_handler_group += 1
 
     async def log_message(self,
@@ -124,6 +130,54 @@ class CommandGroups(BaseCommand):
                                             actor_user=actor,
                                             message=message)
                     connection.commit()
+
+    async def log_membership(self,
+                             update: telegram.Update,
+                             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                             ) -> None:
+        logging.info(f'{self.__class__.__name__}.log_membership')
+        chat = update.effective_chat
+        # Save the results
+        if chat:
+            database = self.bot.databases.get_database(
+                filename=str(chat.id))
+            with database.open() as connection:
+                self.update_database_schema(connection=connection)
+                # self.save_user(connection=connection,
+                #                user=user)
+                if update.chat_member:
+                    new_member = update.chat_member.new_chat_member
+                    old_member = update.chat_member.old_chat_member
+                    user = new_member.user
+                    actor = update.effective_user
+                    print({
+                        'event': 'log_membership',
+                        'chat_id': chat.id if chat else None,
+                        'chat_title': chat.title if chat else None,
+                        'user_id': user.id if user else None,
+                        'user_username': user.username if user else None,
+                        'type': self.get_chat_member_change_type(
+                            member_update=(update.chat_member or
+                                           update.my_chat_member),
+                            bot_action=update.chat_member is None),
+                        'old_status': old_member.status,
+                        'new_status': new_member.status,
+                    })
+                    self.save_event(
+                        connection=connection,
+                        chat=chat,
+                        source='log_membership',
+                        event_type=self.get_chat_member_change_type(
+                            member_update=(update.chat_member or
+                                           update.my_chat_member),
+                            bot_action=update.chat_member is None),
+                        user=user,
+                        actor_user=actor,
+                        message=update.effective_message,
+                        update_id=update.update_id,
+                        old_status=old_member.status,
+                        new_status=new_member.status)
+                connection.commit()
 
     def save_chat(self,
                   connection: sqlite3.Connection,
@@ -457,4 +511,96 @@ class CommandGroups(BaseCommand):
             result = 'left_chat_member'
         else:
             result = 'other'
+        return result
+
+    def get_chat_member_change_type(self,
+                                    member_update: telegram.ChatMemberUpdated,
+                                    bot_action: bool,
+                                    ) -> str:
+        """
+        Get the chat member type by its data
+
+        :param member_update: update details
+        :param bot_action: the update is for a bo
+        :return: member_update type
+        """
+        old_member = member_update.old_chat_member
+        new_member = member_update.new_chat_member
+        old_status = member_update.old_chat_member.status
+        new_status = member_update.new_chat_member.status
+        actor = member_update.from_user
+        target = member_update.new_chat_member.user
+
+        entered_statuses = {telegram.constants.ChatMemberStatus.MEMBER,
+                            telegram.constants.ChatMemberStatus.ADMINISTRATOR,
+                            telegram.constants.ChatMemberStatus.OWNER}
+        left_statuses = {telegram.constants.ChatMemberStatus.LEFT,
+                         telegram.constants.ChatMemberStatus.BANNED}
+
+        if bot_action:
+            if (old_status in left_statuses and
+                    new_status in entered_statuses):
+                result = 'bot_added'
+            elif (old_status in entered_statuses and
+                  new_status in left_statuses):
+                result = 'bot_removed'
+        elif (old_status in left_statuses and
+              new_status in entered_statuses):
+            result = ('join'
+                      if actor is not None and actor.id == target.id
+                      else 'added')
+        elif (old_status in entered_statuses and
+              new_status == telegram.constants.ChatMemberStatus.LEFT):
+            result = ('leave'
+                      if actor is not None and actor.id == target.id
+                      else 'removed')
+        elif new_status == telegram.constants.ChatMemberStatus.BANNED:
+            result = 'banned'
+        elif (old_status == telegram.constants.ChatMemberStatus.BANNED and
+              new_status == telegram.constants.ChatMemberStatus.LEFT):
+            result = 'unbanned'
+        elif (old_status == telegram.constants.ChatMemberStatus.MEMBER and
+              new_status == telegram.constants.ChatMemberStatus.ADMINISTRATOR):
+            result = 'promoted'
+        elif (old_status == telegram.constants.ChatMemberStatus.ADMINISTRATOR
+              and new_status == telegram.constants.ChatMemberStatus.MEMBER):
+            result = 'demoted'
+        elif new_status == telegram.constants.ChatMemberStatus.RESTRICTED:
+            result = 'exception_added'
+        elif (old_status == telegram.constants.ChatMemberStatus.RESTRICTED and
+              new_status in entered_statuses):
+            result = 'exception_removed'
+        elif (old_status == telegram.constants.ChatMemberStatus.RESTRICTED and
+              new_status == telegram.constants.ChatMemberStatus.LEFT):
+            result = 'exception_removed'
+        elif (old_status == telegram.constants.ChatMemberStatus.MEMBER and
+              new_status == telegram.constants.ChatMemberStatus.MEMBER):
+            if (old_member.tag is None and
+                    new_member.tag is not None):
+                result = 'tag_added'
+            elif (old_member.tag is not None and
+                  new_member.tag is None):
+                result = 'tag_removed'
+            elif (old_member.tag is not None and
+                  new_member.tag is not None):
+                result = 'tag_changed'
+            else:
+                result = 'permission_change'
+        elif (old_status in (telegram.constants.ChatMemberStatus.ADMINISTRATOR,
+                             telegram.constants.ChatMemberStatus.OWNER) and
+              new_status in (telegram.constants.ChatMemberStatus.ADMINISTRATOR,
+                             telegram.constants.ChatMemberStatus.OWNER)):
+            if (old_member.custom_title is None and
+                    new_member.custom_title is not None):
+                result = 'title_added'
+            elif (old_member.custom_title is not None and
+                    new_member.custom_title is None):
+                result = 'title_removed'
+            elif (old_member.custom_title is not None and
+                    new_member.custom_title is not None):
+                result = 'title_changed'
+            else:
+                result = 'permission_change'
+        else:
+            result = 'membership_changed'
         return result

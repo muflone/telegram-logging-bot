@@ -120,7 +120,6 @@ class CommandGroups(BaseCommand):
                     if message.new_chat_members:
                         for member in message.new_chat_members:
                             self.save_event(connection=connection,
-                                            chat=chat,
                                             source='log_message',
                                             event_type='join'
                                             if actor is not None and
@@ -165,7 +164,6 @@ class CommandGroups(BaseCommand):
                     })
                     self.save_event(
                         connection=connection,
-                        chat=chat,
                         source='log_membership',
                         event_type=self.get_chat_member_change_type(
                             member_update=(update.chat_member or
@@ -314,7 +312,6 @@ class CommandGroups(BaseCommand):
             connection.execute(
                 '''
                 INSERT INTO messages (
-                    chat_id,
                     message_id,
                     user_id,
                     date,
@@ -325,8 +322,8 @@ class CommandGroups(BaseCommand):
                     edit_date,
                     is_edited
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(chat_id, message_id) DO UPDATE SET
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(message_id) DO UPDATE SET
                     user_id = excluded.user_id,
                     date = excluded.date,
                     message_type = excluded.message_type,
@@ -337,7 +334,6 @@ class CommandGroups(BaseCommand):
                     is_edited = excluded.is_edited
                 ''',
                 (
-                    chat.id,
                     message.message_id,
                     user.id if user else None,
                     message.date.isoformat(),
@@ -352,7 +348,6 @@ class CommandGroups(BaseCommand):
 
     def save_event(self,
                    connection: sqlite3.Connection,
-                   chat: telegram.Chat,
                    source: str,
                    event_type: str,
                    user: Optional[telegram.User],
@@ -366,7 +361,6 @@ class CommandGroups(BaseCommand):
         Save event
 
         :param connection: database connection
-        :param chat: chat details
         :param source: source event
         :param event_type: event type
         :param user: original user details
@@ -379,7 +373,6 @@ class CommandGroups(BaseCommand):
         connection.execute(
             '''
             INSERT INTO events (
-                chat_id,
                 message_id,
                 update_id,
                 source,
@@ -390,10 +383,9 @@ class CommandGroups(BaseCommand):
                 new_status,
                 date
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''',
             (
-                chat.id,
                 message.message_id if message else None,
                 update_id,
                 source,
@@ -445,8 +437,7 @@ class CommandGroups(BaseCommand):
             );
 
             CREATE TABLE IF NOT EXISTS messages (
-                chat_id INTEGER NOT NULL,
-                message_id INTEGER NOT NULL,
+                message_id INTEGER PRIMARY KEY,
                 user_id INTEGER,
                 date TEXT NOT NULL,
                 message_type TEXT NOT NULL,
@@ -454,13 +445,11 @@ class CommandGroups(BaseCommand):
                 caption TEXT,
                 reply_to_message_id INTEGER,
                 edit_date TEXT,
-                is_edited INTEGER NOT NULL DEFAULT 0,
-                PRIMARY KEY (chat_id, message_id)
+                is_edited INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                chat_id INTEGER NOT NULL,
                 message_id INTEGER,
                 update_id INTEGER,
                 source TEXT NOT NULL,

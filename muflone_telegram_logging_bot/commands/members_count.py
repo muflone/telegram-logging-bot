@@ -79,15 +79,13 @@ class CommandMembersCount(BaseCommand):
                     connection.execute(
                         '''
                         INSERT INTO members_count (
-                            chat_id,
                             total,
                             source,
                             taken_at
                         )
-                        VALUES (?, ?, ?, ?)
+                        VALUES (?, ?, ?)
                         ''',
                         (
-                            chat_id,
                             members_count,
                             source,
                             extras.utc_now_iso(),
@@ -142,7 +140,6 @@ class CommandMembersCount(BaseCommand):
             '''
             CREATE TABLE IF NOT EXISTS members_count (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                chat_id INTEGER NOT NULL,
                 total INTEGER NOT NULL,
                 source TEXT NOT NULL,
                 taken_at TEXT NOT NULL

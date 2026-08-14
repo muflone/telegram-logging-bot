@@ -48,5 +48,4 @@ class Database(object):
         """
         with self.open() as connection:
             connection.execute('PRAGMA journal_mode=WAL;')
-            connection.execute('PRAGMA foreign_keys=ON;')
             connection.commit()

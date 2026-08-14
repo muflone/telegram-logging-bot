@@ -40,7 +40,7 @@ class CommandGroups(BaseCommand):
     def __init__(self,
                  bot: Bot):
         super().__init__(bot=bot)
-        self._users = {}
+        self._users: dict[int, dict[int, dict[str, Optional[str]]]] = {}
 
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
@@ -113,7 +113,8 @@ class CommandGroups(BaseCommand):
                     self.save_chat(connection=connection,
                                    chat=chat)
                     self.save_user(connection=connection,
-                                   user=user)
+                                   user=user,
+                                   chat=chat)
                     self.save_message(connection=connection,
                                       chat=chat,
                                       message=message,
@@ -217,12 +218,14 @@ class CommandGroups(BaseCommand):
     def save_user(self,
                   connection: sqlite3.Connection,
                   user: telegram.User,
+                  chat: telegram.Chat,
                   ) -> None:
         """
         Save the user information to database
 
         :param connection: database connection
         :param user: user details
+        :param chat: chat details
         """
         now = extras.utc_now_iso()
         connection.execute(
@@ -256,7 +259,8 @@ class CommandGroups(BaseCommand):
             ),
         )
         # Save user details to history
-        existing_user = self._users.get(user.id, {})
+        chat_users = self._users.setdefault(chat.id, {})
+        existing_user = chat_users.get(user.id, {})
         if not all((user.username == existing_user.get('username', ''),
                     user.first_name == existing_user.get('first_name', ''),
                     user.last_name == existing_user.get('last_name', ''))):
@@ -281,7 +285,7 @@ class CommandGroups(BaseCommand):
                 ),
             )
             # Keep user details
-            self._users[user.id] = {
+            chat_users[user.id] = {
                 'username': user.username,
                 'first_name': user.first_name,
                 'last_name': user.last_name,

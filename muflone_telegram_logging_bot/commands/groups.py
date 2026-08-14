@@ -29,6 +29,8 @@ from .. import extras
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
+    from typing import Optional
+
     import telegram.ext
 
     from ..bot import Bot
@@ -86,6 +88,7 @@ class CommandGroups(BaseCommand):
         if message:
             chat = update.effective_chat
             user = update.effective_user
+            actor = message.from_user
             logging.info({
                 "chat_id": chat.id if chat else None,
                 "chat_title": chat.title if chat else None,
@@ -108,6 +111,18 @@ class CommandGroups(BaseCommand):
                                       chat=chat,
                                       message=message,
                                       user=user)
+                    if message.new_chat_members:
+                        for member in message.new_chat_members:
+                            self.save_event(connection=connection,
+                                            chat=chat,
+                                            source='log_message',
+                                            event_type='join'
+                                            if actor is not None and
+                                               actor.id == member.id
+                                            else 'added',
+                                            user=member,
+                                            actor_user=actor,
+                                            message=message)
                     connection.commit()
 
     def save_chat(self,
@@ -281,6 +296,62 @@ class CommandGroups(BaseCommand):
                 )
             )
 
+    def save_event(self,
+                   connection: sqlite3.Connection,
+                   chat: telegram.Chat,
+                   source: str,
+                   event_type: str,
+                   user: Optional[telegram.User],
+                   actor_user: Optional[telegram.User],
+                   message: Optional[telegram.Message],
+                   update_id: Optional[int] = None,
+                   old_status: Optional[str] = None,
+                   new_status: Optional[str] = None,
+                   ) -> None:
+        """
+        Save event
+
+        :param connection: database connection
+        :param chat: chat details
+        :param source: source event
+        :param event_type: event type
+        :param user: original user details
+        :param actor_user: final user details
+        :param message: message details
+        :param update_id: event to update
+        :param old_status: old status
+        :param new_status: new status
+        """
+        connection.execute(
+            '''
+            INSERT INTO events (
+                chat_id,
+                message_id,
+                update_id,
+                source,
+                event_type,
+                user_id,
+                actor_user_id,
+                old_status,
+                new_status,
+                date
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''',
+            (
+                chat.id,
+                message.message_id,
+                update_id,
+                source,
+                event_type,
+                user.id if user else None,
+                actor_user.id if actor_user else None,
+                old_status,
+                new_status,
+                message.date.isoformat() if message else None,
+            ),
+        )
+
     def update_database_schema(self,
                                connection: sqlite3.Connection,
                                ) -> None:
@@ -331,6 +402,20 @@ class CommandGroups(BaseCommand):
                 edit_date TEXT,
                 is_edited INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY (chat_id, message_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chat_id INTEGER NOT NULL,
+                message_id INTEGER,
+                update_id INTEGER,
+                source TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                user_id INTEGER,
+                actor_user_id INTEGER,
+                old_status TEXT,
+                new_status TEXT,
+                date TEXT NOT NULL
             );
             '''
         )

@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 class CommandMembersCount(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -56,8 +56,8 @@ class CommandMembersCount(BaseCommand):
                          trigger: Trigger,
                          ) -> None:
         result = await self.collect_members_count(source='trigger')
-        await update.message.reply_text(
-            f'Members count statistics collected: {result}')
+        await update.effective_message.reply_text(
+            text=f'Members count statistics collected: {result}')
 
     async def collect_members_count(self,
                                     source: str,
@@ -109,7 +109,7 @@ class CommandMembersCount(BaseCommand):
             })
         return result
 
-    def get_background_tasks(self) -> tuple[Callable]:
+    def get_background_tasks(self) -> tuple[Callable, ...]:
         """
         Get background tasks
 

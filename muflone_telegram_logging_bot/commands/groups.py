@@ -42,7 +42,7 @@ class CommandGroups(BaseCommand):
         super().__init__(bot=bot)
         self._users = {}
 
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -62,8 +62,9 @@ class CommandGroups(BaseCommand):
                          ) -> None:
         result = []
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            result.append(db_path)
-        await update.message.reply_text(f'List of groups managed: {result}')
+            result.append(db_path.parent.name)
+        await update.effective_message.reply_text(
+            text=f'List of groups managed: {result}')
 
     def setup(self,
               app: telegram.ext.Application) -> None:
@@ -104,7 +105,7 @@ class CommandGroups(BaseCommand):
                 'date': message.date.isoformat() if message.date else None,
             })
             # Save the results
-            if chat:
+            if chat and user:
                 database = self.bot.databases.get_database(
                     filename=str(chat.id))
                 with database.open() as connection:
@@ -149,26 +150,24 @@ class CommandGroups(BaseCommand):
                     old_member = update.chat_member.old_chat_member
                     user = new_member.user
                     actor = update.effective_user
-                    print({
+                    event_type = self.get_chat_member_change_type(
+                            member_update=(update.chat_member or
+                                           update.my_chat_member),
+                            bot_action=update.chat_member is None)
+                    logging.info({
                         'event': 'log_membership',
                         'chat_id': chat.id if chat else None,
                         'chat_title': chat.title if chat else None,
                         'user_id': user.id if user else None,
                         'user_username': user.username if user else None,
-                        'type': self.get_chat_member_change_type(
-                            member_update=(update.chat_member or
-                                           update.my_chat_member),
-                            bot_action=update.chat_member is None),
+                        'type': event_type,
                         'old_status': old_member.status,
                         'new_status': new_member.status,
                     })
                     self.save_event(
                         connection=connection,
                         source='log_membership',
-                        event_type=self.get_chat_member_change_type(
-                            member_update=(update.chat_member or
-                                           update.my_chat_member),
-                            bot_action=update.chat_member is None),
+                        event_type=event_type,
                         user=user,
                         actor_user=actor,
                         message=update.effective_message,
@@ -533,6 +532,8 @@ class CommandGroups(BaseCommand):
             elif (old_status in entered_statuses and
                   new_status in left_statuses):
                 result = 'bot_removed'
+            else:
+                result = 'bot_changed'
         elif (old_status in left_statuses and
               new_status in entered_statuses):
             result = ('join'

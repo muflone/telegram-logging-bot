@@ -40,15 +40,16 @@ class Databases(object):
                 except ValueError:
                     continue
                 # Get database path
-                db_path = self.get_database_path(filename=group_dir.name)
+                db_path = self.get_database_path(directory_name=group_dir.name)
                 if db_path.exists():
                     result[chat_id] = db_path
         return result
 
     def get_database_path(self,
-                          filename: str) -> pathlib.Path:
-        return pathlib.Path(self.data_dir / filename / 'data.sqlite')
+                          directory_name: str) -> pathlib.Path:
+        return pathlib.Path(self.data_dir / directory_name / 'data.sqlite')
 
     def get_database(self,
-                     filename: str):
-        return Database(filepath=self.get_database_path(filename=filename))
+                     filename: str) -> Database:
+        return Database(filepath=self.get_database_path(
+            directory_name=filename))

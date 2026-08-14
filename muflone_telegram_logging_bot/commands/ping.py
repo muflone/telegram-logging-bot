@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class CommandPing(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -47,4 +47,5 @@ class CommandPing(BaseCommand):
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                          trigger: Trigger,
                          ) -> None:
-        await update.message.reply_text('PONG!')
+        await update.effective_message.reply_text(
+            text='PONG!')

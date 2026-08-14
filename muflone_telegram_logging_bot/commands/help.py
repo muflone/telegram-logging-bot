@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class CommandHelp(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -53,4 +53,6 @@ class CommandHelp(BaseCommand):
                 commands_description.append(
                     f'/{trigger.trigger}\n'
                     f'{trigger.description}\n')
-        await update.message.reply_text('\n'.join(commands_description))
+        await update.effective_message.reply_text(
+            text='\n'.join(commands_description) or
+                 'No commands available.')

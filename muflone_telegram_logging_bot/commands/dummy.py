@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class CommandDummy(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -52,7 +52,8 @@ class CommandDummy(BaseCommand):
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                            trigger: Trigger,
                            ) -> None:
-        await update.message.reply_text('dummy1')
+        await update.effective_message.reply_text(
+            text='dummy1')
 
     @BaseCommand.call_trigger
     async def do_trigger_2(self,
@@ -60,9 +61,10 @@ class CommandDummy(BaseCommand):
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                            trigger: Trigger,
                            ) -> None:
-        await update.message.reply_text('dummy2')
+        await update.effective_message.reply_text(
+            text='dummy2')
 
-    def get_background_tasks(self) -> tuple[Callable]:
+    def get_background_tasks(self) -> tuple[Callable, ...]:
         """
         Get background tasks
 

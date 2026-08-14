@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class CommandVersion(BaseCommand):
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -49,4 +49,5 @@ class CommandVersion(BaseCommand):
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                          trigger: Trigger,
                          ) -> None:
-        await update.message.reply_text(APP_VERSION)
+        await update.effective_message.reply_text(
+            text=APP_VERSION)

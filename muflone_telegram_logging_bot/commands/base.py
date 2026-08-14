@@ -66,7 +66,7 @@ class BaseCommand(object):
                 commands[command_class.__name__] = command
         return commands
 
-    def get_triggers(self) -> tuple[Trigger]:
+    def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
 
@@ -74,6 +74,7 @@ class BaseCommand(object):
         """
         return ()
 
+    @staticmethod
     def call_trigger(callback: Callable) -> Callable:
         @functools.wraps(callback)
         def wrapper(*args, **kwargs):
@@ -82,7 +83,7 @@ class BaseCommand(object):
             return callback(*args, **kwargs)
         return wrapper
 
-    def get_background_tasks(self) -> tuple[Callable]:
+    def get_background_tasks(self) -> tuple[Callable, ...]:
         """
         Get background tasks
 

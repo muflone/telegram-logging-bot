@@ -23,11 +23,11 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Optional, Callable
 
 
 @dataclass
 class Trigger:
     trigger: str
-    description: str
+    description: Optional[str]
     callback: Callable

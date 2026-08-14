@@ -26,6 +26,7 @@ import telegram
 
 from .base import BaseCommand
 from .. import extras
+from ..database import Database
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
@@ -72,6 +73,7 @@ class CommandGroups(BaseCommand):
         Setup command logic
         """
         super().setup(app=app)
+        self.load_users_cache()
         logging.info(f'Setup message handler for {self.__class__.__name__}')
         app.add_handler(
             handler=telegram.ext.MessageHandler(
@@ -602,3 +604,45 @@ class CommandGroups(BaseCommand):
         else:
             result = 'membership_changed'
         return result
+
+    def load_users_cache(self) -> None:
+        """
+        Load users details from the databases into the memory cache
+        """
+        self._users.clear()
+        loaded_users = 0
+        for chat_id, db_path in self.bot.databases.get_known_groups().items():
+            database = Database(filepath=db_path)
+            try:
+                with database.open() as connection:
+                    self.update_database_schema(connection=connection)
+                    chat_users = self._users.setdefault(chat_id, {})
+                    for row in connection.execute(
+                            '''
+                            SELECT
+                                user_id,
+                                username,
+                                first_name,
+                                last_name
+                            FROM users
+                            '''):
+                        chat_users[row['user_id']] = {
+                            'username': row['username'],
+                            'first_name': row['first_name'],
+                            'last_name': row['last_name'],
+                        }
+                        loaded_users += 1
+            except sqlite3.Error as error:
+                logging.error({
+                    'name': self.__class__.__name__,
+                    'event': 'load_users_cache_error',
+                    'chat_id': chat_id,
+                    'database': str(db_path),
+                    'error': str(error),
+                })
+        logging.info({
+            'name': self.__class__.__name__,
+            'event': 'load_users_cache',
+            'chats': len(self._users),
+            'users': loaded_users,
+        })

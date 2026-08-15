@@ -40,7 +40,7 @@ def load_font(size: int,
     Load a TrueType font if available
     """
     candidates = [
-        '/usr/share/fonts/noto/NotoSansCJK-Medium.ttc' if bold else
+        '/usr/share/fonts/noto/NotoSansCJK-Regular.ttc' if bold else
         '/usr/share/fonts/noto/NotoSansCJK-Bold.ttc',
         '/usr/share/fonts/noto-cjk/NotoSansCJK-Medium.ttc' if bold else
         '/usr/share/fonts/noto-cjk/NotoSansCJK-Bold.ttc',

@@ -143,12 +143,22 @@ class CommandGrowth(BaseCommand):
             self.update_database_schema(connection=connection)
             result = connection.execute(
                 '''
+                WITH last_dates AS (
+                  SELECT
+                    members_count.id,
+                    MAX(members_count.taken_at)
+                  FROM members_count
+                  GROUP BY date(members_count.taken_at)
+                )
                 SELECT
+                  members_count.id,
                   date(members_count.taken_at) AS date,
-                  MAX(members_count.total) AS users_count
+                  members_count.total AS users_count
                 FROM members_count
-                WHERE date(members_count.taken_at) BETWEEN ? AND ?
-                GROUP BY date(members_count.taken_at)
+                INNER JOIN last_dates
+                   ON last_dates.id = members_count.id
+                WHERE TRUE
+                  AND date(members_count.taken_at) BETWEEN ? AND ?
                 ORDER BY date ASC
                 ''',
                 (

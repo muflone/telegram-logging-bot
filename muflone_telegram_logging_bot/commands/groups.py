@@ -109,7 +109,7 @@ class CommandGroups(BaseCommand):
             # Save the results
             if chat and user:
                 database = self.bot.databases.get_database(
-                    filename=str(chat.id))
+                    directory_name=str(chat.id))
                 with database.open() as connection:
                     self.update_database_schema(connection=connection)
                     self.save_chat(connection=connection,
@@ -143,7 +143,7 @@ class CommandGroups(BaseCommand):
         # Save the results
         if chat:
             database = self.bot.databases.get_database(
-                filename=str(chat.id))
+                directory_name=str(chat.id))
             with database.open() as connection:
                 self.update_database_schema(connection=connection)
                 if update.chat_member:

@@ -50,6 +50,6 @@ class Databases(object):
         return pathlib.Path(self.data_dir / directory_name / 'data.sqlite')
 
     def get_database(self,
-                     filename: str) -> Database:
+                     directory_name: str) -> Database:
         return Database(filepath=self.get_database_path(
-            directory_name=filename))
+            directory_name=directory_name))

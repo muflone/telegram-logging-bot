@@ -51,8 +51,8 @@ class CommandStats(BaseCommand):
         :return: tuple of Trigger
         """
         return (
-            Trigger(trigger='stats',
-                    description='Show statistics',
+            Trigger(trigger='stats_active_users',
+                    description='Show most active users by message numbers',
                     callback=self.do_trigger),
         )
 

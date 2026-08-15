@@ -40,7 +40,7 @@ NAME_COLOR = '#ffffff'
 TEXT_COLOR = '#9aa0a6'
 
 
-class CommandStart(BaseCommand):
+class CommandStats(BaseCommand):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks

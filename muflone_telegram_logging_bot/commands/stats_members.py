@@ -20,6 +20,7 @@
 
 import datetime
 import io
+import math
 from typing import TYPE_CHECKING
 
 import dateutil
@@ -267,17 +268,30 @@ class CommandGrowth(BaseCommand):
                   font=subtitle_font)
 
         numeric_values = [value for _, value in values]
-        min_value = min(numeric_values)
-        max_value = max(numeric_values)
+        raw_min_value = min(numeric_values)
+        raw_max_value = max(numeric_values)
+        raw_range = raw_max_value - raw_min_value
+        if raw_range <= 10:
+            tick_step = 1
+        elif raw_range <= 50:
+            tick_step = 5
+        elif raw_range <= 100:
+            tick_step = 10
+        elif raw_range <= 500:
+            tick_step = 50
+        elif raw_range <= 1000:
+            tick_step = 100
+        else:
+            tick_step = 200
+
+        min_value = math.floor(raw_min_value / tick_step) * tick_step
+        max_value = math.ceil(raw_max_value / tick_step) * tick_step
 
         if min_value == max_value:
-            min_value -= 1
-            max_value += 1
+            min_value -= tick_step
+            max_value += tick_step
 
-        min_value = min_value - min_value % 10
-        max_value = max_value + (10 - max_value % 10)
-
-        for value in range(int(min_value), int(max_value) + 1):
+        for value in range(int(min_value), int(max_value) + 1, tick_step):
             y = self.value_to_y(
                 value=value,
                 min_value=min_value,

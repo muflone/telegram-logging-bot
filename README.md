@@ -14,7 +14,7 @@
 
 Save messages and chat history.
 
-It currently some minimal commands using /start
+It currently includes some minimal commands you can access using /start
 
 # System Requirements
 

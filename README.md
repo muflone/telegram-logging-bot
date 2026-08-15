@@ -19,6 +19,7 @@ It currently includes some minimal commands you can access using /start
 # System Requirements
 
 * Python >= 3.13 (developed and tested for Python 3.14)
+* Python DateUtil 2.9.x ( https://pypi.org/project/python-dateutil/ )
 * Python Telegram Bot 22.x ( https://pypi.org/project/python-telegram-bot/ )
 * Python Imaging Library pillow 12.x ( https://pypi.org/project/pillow/ )
 

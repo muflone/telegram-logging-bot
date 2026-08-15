@@ -23,6 +23,7 @@ import importlib
 import inspect
 import logging
 import pkgutil
+import sqlite3
 from typing import TYPE_CHECKING
 
 import telegram.ext
@@ -110,3 +111,13 @@ class BaseCommand(object):
                                                trigger=trigger)),
                 group=self.bot.next_handler_group)
         self.bot.next_handler_group += 1
+
+    def update_database_schema(self,
+                               connection: sqlite3.Connection,
+                               ) -> None:
+        """
+        Update database schema
+
+        :param connection: database connection
+        """
+        return

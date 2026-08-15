@@ -31,6 +31,7 @@ from ..image import (get_user_avatar,
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
+    from typing import Optional
     import sqlite3
 
     import telegram
@@ -62,12 +63,49 @@ class CommandStats(BaseCommand):
                          trigger: Trigger,
                          ) -> None:
         chat = update.effective_chat
-        image = await create_top_members_image(rows=rows)
-        await update.effective_message.reply_photo(photo=image,
-                                                   caption='Top members')
+        if selected_date := self.parse_date(context=context):
+            if rows := self.get_top_members(chat=chat,
+                                            date=selected_date,
+                                            limit=15):
+                # Results found
+                image = await self.create_top_members_image(
+                    rows=rows,
+                    date=selected_date)
+                await update.effective_message.reply_photo(
+                    photo=image,
+                    caption='Top members')
+            else:
+                # No results
+                await update.effective_message.reply_text(
+                    text=f'No results for {selected_date.isoformat()}')
+        else:
+            await update.effective_message.reply_text(
+                text=f'Usage: /{trigger.trigger} [YYYY-MM-DD]')
+
+    def parse_date(self,
+                   context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                   ) -> Optional[datetime.date]:
+        """
+        Parse date from command arguments
+
+        :param context: telegram Context object
+        :return: selected date or None
+        """
+        if context.args:
+            try:
+                # Try to parse the specified date
+                result = datetime.date.strptime(context.args[0],
+                                                '%Y-%m-%d')
+            except ValueError:
+                result = None
+        else:
+            # Use today if date is not specified
+            result = datetime.date.today()
+        return result
 
     def get_top_members(self,
                         chat: telegram.Chat,
+                        date: datetime.date,
                         limit: int,
                         ) -> list[sqlite3.Row]:
         database = self.bot.databases.get_database(
@@ -93,7 +131,7 @@ class CommandStats(BaseCommand):
                 LIMIT ?
                 ''',
                 (
-                    datetime.date.today().isoformat(),
+                    date.isoformat(),
                     limit
                 )
             ).fetchall()
@@ -101,6 +139,7 @@ class CommandStats(BaseCommand):
 
     async def create_top_members_image(self,
                                        rows: list[dict],
+                                       date: datetime.date,
                                        ) -> io.BytesIO:
         """
         Create an image with the most active members
@@ -121,7 +160,7 @@ class CommandStats(BaseCommand):
         name_font = load_font(size=13, bold=True)
         stats_font = load_font(size=12)
         draw.text(xy=(padding_x, padding_top),
-                  text='Top members',
+                  text=f'Top members for {date.isoformat()}',
                   fill=TITLE_COLOR,
                   font=title_font)
         y = padding_top + title_height + 6

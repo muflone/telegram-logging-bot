@@ -68,7 +68,7 @@ class CommandStats(BaseCommand):
                                             date=selected_date,
                                             limit=15):
                 # Results found
-                image = await self.create_top_members_image(
+                image = await self.create_graph_image(
                     rows=rows,
                     date=selected_date)
                 await update.effective_message.reply_photo(
@@ -108,6 +108,14 @@ class CommandStats(BaseCommand):
                         date: datetime.date,
                         limit: int,
                         ) -> list[sqlite3.Row]:
+        """
+        Get the most active members by messages count
+
+        :param chat: chat details
+        :param date: selected date
+        :param limit: number of results
+        :return: list of Rows with data
+        """
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
@@ -137,12 +145,16 @@ class CommandStats(BaseCommand):
             ).fetchall()
         return result
 
-    async def create_top_members_image(self,
-                                       rows: list[dict],
-                                       date: datetime.date,
-                                       ) -> io.BytesIO:
+    async def create_graph_image(self,
+                                 rows: list[sqlite3.Row],
+                                 date: datetime.date,
+                                 ) -> io.BytesIO:
         """
         Create an image with the most active members
+
+        :param rows: list of Rows with data
+        :param date: selected date
+        :return: binary data with the graph image
         """
         width = 450
         padding_x = 18

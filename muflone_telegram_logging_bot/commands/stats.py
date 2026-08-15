@@ -49,7 +49,7 @@ class CommandStats(BaseCommand):
         """
         return (
             Trigger(trigger='stats',
-                    description=None,
+                    description='Show statistics',
                     callback=self.do_trigger),
         )
 

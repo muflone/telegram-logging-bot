@@ -245,7 +245,6 @@ class CommandGrowth(BaseCommand):
         chart_right = width - padding_right
         chart_bottom = height - padding_bottom
         chart_width = chart_right - chart_left
-        chart_height = chart_bottom - chart_top
 
         image = PIL.Image.new(mode='RGB',
                               size=(width, height),
@@ -277,18 +276,20 @@ class CommandGrowth(BaseCommand):
 
         min_value = min_value - min_value % 10
         max_value = max_value + (10 - max_value % 10)
-        value_range = max_value - min_value
-        grid_lines = 10
 
-        for index in range(grid_lines):
-            ratio = index / (grid_lines - 1)
-            y = chart_bottom - int(chart_height * ratio)
-            value = min_value + value_range * ratio
+        for value in range(int(min_value), int(max_value) + 1):
+            y = self.value_to_y(
+                value=value,
+                min_value=min_value,
+                max_value=max_value,
+                chart_top=chart_top,
+                chart_bottom=chart_bottom,
+            )
             draw.line(xy=(chart_left, y, chart_right, y),
                       fill=GRID_COLOR,
                       width=1)
             draw.text(xy=(12, y - 7),
-                      text=str(int(round(value))),
+                      text=str(value),
                       fill=TEXT_COLOR,
                       font=label_font)
 
@@ -321,7 +322,7 @@ class CommandGrowth(BaseCommand):
         else:
             draw.line(xy=points,
                       fill=LINE_COLOR,
-                      width=2)
+                      width=1)
 
         self.draw_x_labels(draw=draw,
                            values=values,
@@ -346,8 +347,12 @@ class CommandGrowth(BaseCommand):
         """
         Convert a numeric value to a chart Y coordinate.
         """
-        ratio = (value - min_value) / (max_value - min_value)
-        return chart_bottom - int((chart_bottom - chart_top) * ratio)
+        if min_value == max_value:
+            result = (chart_top + chart_bottom) // 2
+        else:
+            ratio = (value - min_value) / (max_value - min_value)
+            result = chart_bottom - round((chart_bottom - chart_top) * ratio)
+        return result
 
     def draw_x_labels(self,
                       draw: PIL.ImageDraw.ImageDraw,

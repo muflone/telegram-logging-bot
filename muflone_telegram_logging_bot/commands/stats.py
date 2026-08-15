@@ -31,6 +31,8 @@ from ..image import (get_user_avatar,
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
+    import sqlite3
+
     import telegram
     import telegram.ext
 
@@ -60,11 +62,19 @@ class CommandStats(BaseCommand):
                          trigger: Trigger,
                          ) -> None:
         chat = update.effective_chat
+        image = await create_top_members_image(rows=rows)
+        await update.effective_message.reply_photo(photo=image,
+                                                   caption='Top members')
+
+    def get_top_members(self,
+                        chat: telegram.Chat,
+                        limit: int,
+                        ) -> list[sqlite3.Row]:
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
             self.update_database_schema(connection=connection)
-            rows = connection.execute(
+            result = connection.execute(
                 '''
                 SELECT
                   date(messages.date) AS date,
@@ -82,68 +92,69 @@ class CommandStats(BaseCommand):
                 ORDER BY date DESC, messages_count DESC
                 LIMIT ?
                 ''',
-                (datetime.date.today().isoformat(), 20)
+                (
+                    datetime.date.today().isoformat(),
+                    limit
+                )
             ).fetchall()
-        image = await create_top_members_image(bot=context.bot,
-                                               rows=rows)
-        await update.effective_message.reply_photo(photo=image,
-                                                   caption='Top members')
+        return result
 
+    async def create_top_members_image(self,
+                                       rows: list[dict],
+                                       ) -> io.BytesIO:
+        """
+        Create an image with the most active members
+        """
+        width = 450
+        padding_x = 18
+        padding_top = 14
+        title_height = 28
+        row_height = 66
+        avatar_size = 48
 
-async def create_top_members_image(bot, rows: list[dict]) -> io.BytesIO:
-    """
-    Create an image with the most active members
-    """
-    width = 450
-    padding_x = 18
-    padding_top = 14
-    title_height = 28
-    row_height = 66
-    avatar_size = 48
-
-    height = padding_top + title_height + len(rows) * row_height + 12
-    image = PIL.Image.new(mode='RGB',
-                          size=(width, height),
-                          color=BACKGROUND)
-    draw = PIL.ImageDraw.Draw(im=image)
-    title_font = load_font(size=18, bold=True)
-    name_font = load_font(size=13, bold=True)
-    stats_font = load_font(size=12)
-    draw.text(xy=(padding_x, padding_top),
-              text='Top members',
-              fill=TITLE_COLOR,
-              font=title_font)
-    y = padding_top + title_height + 6
-    for row in rows:
-        user_id = int(row['user_id'])
-        user_name = f'{row["first_name"]} {row["last_name"]} '
-        if not user_name.strip():
-            user_name = '@{row["username"]}'
-        messages_count = int(row['messages_count'])
-        avg_length = int(row['average_length'] or 0)
-        # Get user avatar image or fallback
-        avatar = await get_user_avatar(bot=bot,
-                                       user_id=user_id,
-                                       name=user_name,
-                                       size=avatar_size)
-        avatar_x = padding_x
-        image.paste(im=avatar,
-                    box=(avatar_x, y + 4),
-                    mask=avatar)
-        text_x = avatar_x + avatar_size + 12
-        draw.text(xy=(text_x, y + 8),
-                  text=user_name,
-                  fill=NAME_COLOR,
-                  font=name_font)
-        draw.text(xy=(text_x, y + 30),
-                  text=(f'{messages_count} messages, '
-                        f'{avg_length} characters average'),
-                  fill=TEXT_COLOR,
-                  font=stats_font)
-        y += row_height
-    # Return image
-    output = io.BytesIO()
-    image.save(fp=output,
-               format='PNG')
-    output.seek(0)
-    return output
+        height = padding_top + title_height + len(rows) * row_height + 12
+        image = PIL.Image.new(mode='RGB',
+                              size=(width, height),
+                              color=BACKGROUND)
+        draw = PIL.ImageDraw.Draw(im=image)
+        title_font = load_font(size=18, bold=True)
+        name_font = load_font(size=13, bold=True)
+        stats_font = load_font(size=12)
+        draw.text(xy=(padding_x, padding_top),
+                  text='Top members',
+                  fill=TITLE_COLOR,
+                  font=title_font)
+        y = padding_top + title_height + 6
+        for row in rows:
+            user_id = int(row['user_id'])
+            user_name = f'{row["first_name"]} {row["last_name"]} '
+            if not user_name.strip():
+                user_name = '@{row["username"]}'
+            messages_count = int(row['messages_count'])
+            avg_length = int(row['average_length'] or 0)
+            # Get user avatar image or fallback
+            avatar = await get_user_avatar(bot=self.bot.bot,
+                                           user_id=user_id,
+                                           name=user_name,
+                                           size=avatar_size)
+            avatar_x = padding_x
+            image.paste(im=avatar,
+                        box=(avatar_x, y + 4),
+                        mask=avatar)
+            text_x = avatar_x + avatar_size + 12
+            draw.text(xy=(text_x, y + 8),
+                      text=user_name,
+                      fill=NAME_COLOR,
+                      font=name_font)
+            draw.text(xy=(text_x, y + 30),
+                      text=(f'{messages_count} messages, '
+                            f'{avg_length} characters average'),
+                      fill=TEXT_COLOR,
+                      font=stats_font)
+            y += row_height
+        # Return image
+        output = io.BytesIO()
+        image.save(fp=output,
+                   format='PNG')
+        output.seek(0)
+        return output

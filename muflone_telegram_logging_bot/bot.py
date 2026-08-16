@@ -70,6 +70,13 @@ class Bot:
         """
         Set all the post init tasks
         """
+        # Setup commands
+        await self.bot.set_my_commands([
+            telegram.BotCommand(command=trigger.trigger,
+                                description=trigger.description)
+            for trigger in self.triggers.values()
+            if trigger.trigger and trigger.description
+        ])
         # Start all the background tasks from each command
         for task in self.background_tasks:
             asyncio.create_task(task())

@@ -54,7 +54,7 @@ class Bot:
                 self.background_tasks.extend(new_tasks)
         self.application = (telegram.ext.Application.builder()
                             .token(token=self.telegram_token)
-                            .post_init(self.start_background_tasks)
+                            .post_init(self.post_init)
                             .build()
                             )
         self.bot = self.application.bot
@@ -65,10 +65,11 @@ class Bot:
         self.application.run_polling(
             allowed_updates=telegram.Update.ALL_TYPES)
 
-    async def start_background_tasks(self,
-                                     app: telegram.ext.Application):
+    async def post_init(self,
+                        app: telegram.ext.Application):
         """
-        Start all the background tasks from each command
+        Set all the post init tasks
         """
+        # Start all the background tasks from each command
         for task in self.background_tasks:
             asyncio.create_task(task())

@@ -27,6 +27,7 @@ import dateutil
 
 import PIL.Image
 import PIL.ImageDraw
+import PIL.ImageFont
 
 from .base import BaseCommand
 from ..image import load_font
@@ -246,10 +247,10 @@ class CommandGrowth(BaseCommand):
         """
         width = 600
         height = 400
-        padding_left = 42
-        padding_right = 22
-        padding_top = 62
-        padding_bottom = 32
+        padding_left = 40
+        padding_right = 20
+        padding_top = 80
+        padding_bottom = 30
 
         chart_left = padding_left
         chart_top = padding_top
@@ -280,32 +281,42 @@ class CommandGrowth(BaseCommand):
         numeric_values = [value for _, value in values]
         raw_min_value = min(numeric_values)
         raw_max_value = max(numeric_values)
-        raw_range = raw_max_value - raw_min_value
-        if raw_range <= 10:
+
+        base_step = 10
+        base_min_value = math.floor(raw_min_value / base_step) * base_step
+        base_max_value = math.ceil(raw_max_value / base_step) * base_step
+
+        if base_min_value == base_max_value:
+            base_min_value -= base_step
+            base_max_value += base_step
+
+        axis_range = base_max_value - base_min_value
+        if axis_range <= 10:
             tick_step = 1
-        elif raw_range <= 50:
+        elif axis_range <= 50:
             tick_step = 5
-        elif raw_range <= 100:
+        elif axis_range <= 100:
             tick_step = 10
-        elif raw_range <= 500:
+        elif axis_range <= 500:
             tick_step = 50
-        elif raw_range <= 1000:
+        elif axis_range <= 1000:
             tick_step = 100
         else:
             tick_step = 200
 
-        min_value = math.floor(raw_min_value / tick_step) * tick_step
-        max_value = math.ceil(raw_max_value / tick_step) * tick_step
+        limit_step = max(base_step, tick_step)
+        min_value = math.floor(raw_min_value / limit_step) * limit_step
+        max_value = math.ceil(raw_max_value / limit_step) * limit_step
 
         if min_value == max_value:
-            min_value -= tick_step
-            max_value += tick_step
+            min_value -= limit_step
+            max_value += limit_step
 
         for value in range(int(min_value), int(max_value) + 1, tick_step):
             y = self.value_to_y(
                 value=value,
-                min_value=min_value,
-                max_value=max_value,
+                min_value=base_min_value,
+                max_value=base_max_value,
                 chart_top=chart_top,
                 chart_bottom=chart_bottom,
             )
@@ -323,18 +334,18 @@ class CommandGrowth(BaseCommand):
             date, value = values[0]
             x = chart_left
             y = self.value_to_y(value=value,
-                                min_value=min_value,
-                                max_value=max_value,
+                                min_value=base_min_value,
+                                max_value=base_max_value,
                                 chart_top=chart_top,
                                 chart_bottom=chart_bottom)
             points.append((x, y))
         else:
             for index, (_, value) in enumerate(values):
                 x = (chart_left +
-                     int(chart_width * index / (len(values) - 1)))
+                     round(chart_width * index / (len(values) - 1)))
                 y = self.value_to_y(value=value,
-                                    min_value=min_value,
-                                    max_value=max_value,
+                                    min_value=base_min_value,
+                                    max_value=base_max_value,
                                     chart_top=chart_top,
                                     chart_bottom=chart_bottom)
                 points.append((x, y))
@@ -406,7 +417,7 @@ class CommandGrowth(BaseCommand):
                 if len(values) == 1:
                     x = chart_left
                 else:
-                    x = chart_left + int(
+                    x = chart_left + round(
                         (chart_right - chart_left) * index / (len(values) - 1)
                     )
 

@@ -38,14 +38,26 @@ class CommandPing(BaseCommand):
         return (
             Trigger(trigger='ping',
                     description='Ping if the bot is alive',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger_ping),
+            Trigger(trigger='pong',
+                    description='Pong if the bot is alive',
+                    callback=self.do_trigger_pong),
         )
 
     @BaseCommand.call_trigger
-    async def do_trigger(self,
-                         update: telegram.Update,
-                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
-                         ) -> None:
+    async def do_trigger_ping(self,
+                              update: telegram.Update,
+                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                              trigger: Trigger,
+                              ) -> None:
         await update.effective_message.reply_text(
             text='PONG!')
+
+    @BaseCommand.call_trigger
+    async def do_trigger_pong(self,
+                              update: telegram.Update,
+                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                              trigger: Trigger,
+                              ) -> None:
+        await update.effective_message.reply_text(
+            text='PING!')

@@ -51,10 +51,11 @@ class PluginStatsActiveUsers(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='stats_active_users',
-                    description='Show most active users by message numbers',
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='stats_active_users',
+                             description='Show most active users by '
+                                         'message numbers',
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

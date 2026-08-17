@@ -25,9 +25,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Callable
 
+    from .plugins.base import BasePlugin
+
 
 @dataclass
 class Command:
+    plugin: BasePlugin
     trigger: str
     description: Optional[str]
     callback: Callable

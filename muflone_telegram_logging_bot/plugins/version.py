@@ -38,10 +38,10 @@ class PluginVersion(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='version',
-                    description='Get the bot version',
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='version',
+                             description='Get the bot version',
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

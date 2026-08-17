@@ -36,14 +36,14 @@ class PluginPing(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='ping',
-                    description='Ping if the bot is alive',
-                    callback=self.do_command_ping,
-                    status=True),
-            Command(trigger='pong',
-                    description='Pong if the bot is alive',
-                    callback=self.do_command_pong,
-                    status=True),
+            self.new_command(trigger='ping',
+                             description='Ping if the bot is alive',
+                             callback=self.do_command_ping,
+                             status=True),
+            self.new_command(trigger='pong',
+                             description='Pong if the bot is alive',
+                             callback=self.do_command_pong,
+                             status=True),
         )
 
     @BasePlugin.call_command

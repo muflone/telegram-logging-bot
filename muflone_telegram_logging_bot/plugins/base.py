@@ -125,3 +125,24 @@ class BasePlugin(object):
         :param connection: database connection
         """
         return
+
+    def new_command(self,
+                    trigger: str,
+                    description: str,
+                    callback: Callable,
+                    status: bool
+                    ) -> Command:
+        """
+        Create a new Command
+
+        :param trigger: command trigger
+        :param description: command description
+        :param callback: command callback
+        :param status: command status
+        :return: new Command object
+        """
+        return Command(plugin=self,
+                       trigger=trigger,
+                       description=description,
+                       callback=callback,
+                       status=status)

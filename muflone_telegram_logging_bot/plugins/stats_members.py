@@ -55,10 +55,10 @@ class PluginStatsMembers(BasePlugin):
         Get commands and callbacks
         """
         return (
-            Command(trigger='stats_members',
-                    description='Show members growth chart',
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='stats_members',
+                             description='Show members growth chart',
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

@@ -38,14 +38,14 @@ class PluginDummy(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='dummy1',
-                    description='Dummy command',
-                    callback=self.do_command_1,
-                    status=False),
-            Command(trigger='dummy2',
-                    description='Dummy command',
-                    callback=self.do_command_2,
-                    status=False),
+            self.new_command(trigger='dummy1',
+                             description='Dummy command',
+                             callback=self.do_command_1,
+                             status=False),
+            self.new_command(trigger='dummy2',
+                             description='Dummy command',
+                             callback=self.do_command_2,
+                             status=False),
         )
 
     @BasePlugin.call_command

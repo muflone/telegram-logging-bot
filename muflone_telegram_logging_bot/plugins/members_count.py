@@ -44,10 +44,10 @@ class PluginMembersCount(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='members_count',
-                    description='Collect members count statistics',
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='members_count',
+                             description='Collect members count statistics',
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

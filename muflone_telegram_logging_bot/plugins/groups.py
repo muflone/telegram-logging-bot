@@ -50,10 +50,10 @@ class PluginGroups(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='groups',
-                    description='List the managed groups',
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='groups',
+                             description='List the managed groups',
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

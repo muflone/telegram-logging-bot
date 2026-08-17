@@ -36,10 +36,10 @@ class PluginHelp(BasePlugin):
         :return: tuple of Command
         """
         return (
-            Command(trigger='help',
-                    description=None,
-                    callback=self.do_command,
-                    status=True),
+            self.new_command(trigger='help',
+                             description=None,
+                             callback=self.do_command,
+                             status=True),
         )
 
     @BasePlugin.call_command

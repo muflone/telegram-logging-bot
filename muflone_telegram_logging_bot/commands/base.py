@@ -101,15 +101,19 @@ class BaseCommand(object):
             if trigger.trigger in self.bot.triggers:
                 raise ValueError(
                     f'Duplicate command name: {trigger.trigger}')
-            self.bot.triggers[trigger.trigger] = trigger
-            logging.info(f'Setup trigger /{trigger.trigger} '
-                         f'for {self.__class__.__name__}')
-            app.add_handler(
-                handler=telegram.ext.CommandHandler(
-                    command=trigger.trigger,
-                    callback=functools.partial(trigger.callback,
-                                               trigger=trigger)),
-                group=self.bot.next_handler_group)
+            if trigger.status:
+                self.bot.triggers[trigger.trigger] = trigger
+                logging.info(f'Setup trigger /{trigger.trigger} '
+                             f'for {self.__class__.__name__}')
+                app.add_handler(
+                    handler=telegram.ext.CommandHandler(
+                        command=trigger.trigger,
+                        callback=functools.partial(trigger.callback,
+                                                   trigger=trigger)),
+                    group=self.bot.next_handler_group)
+            else:
+                logging.info(f'Skipped trigger /{trigger.trigger} '
+                             f'for {self.__class__.__name__}')
         self.bot.next_handler_group += 1
 
     def update_database_schema(self,

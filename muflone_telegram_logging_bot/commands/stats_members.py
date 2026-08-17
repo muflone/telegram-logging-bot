@@ -57,7 +57,8 @@ class CommandGrowth(BaseCommand):
         return (
             Trigger(trigger='stats_members',
                     description='Show members growth chart',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

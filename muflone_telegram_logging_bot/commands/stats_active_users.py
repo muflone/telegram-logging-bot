@@ -53,7 +53,8 @@ class CommandStats(BaseCommand):
         return (
             Trigger(trigger='stats_active_users',
                     description='Show most active users by message numbers',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

@@ -38,7 +38,8 @@ class CommandHelp(BaseCommand):
         return (
             Trigger(trigger='help',
                     description=None,
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

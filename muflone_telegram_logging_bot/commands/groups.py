@@ -52,7 +52,8 @@ class CommandGroups(BaseCommand):
         return (
             Trigger(trigger='groups',
                     description='List the managed groups',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

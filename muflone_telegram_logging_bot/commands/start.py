@@ -38,7 +38,8 @@ class CommandStart(BaseCommand):
         return (
             Trigger(trigger='start',
                     description=None,
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

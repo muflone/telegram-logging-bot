@@ -40,7 +40,8 @@ class CommandVersion(BaseCommand):
         return (
             Trigger(trigger='version',
                     description='Get the bot version',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

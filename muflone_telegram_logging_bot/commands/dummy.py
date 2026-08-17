@@ -40,10 +40,12 @@ class CommandDummy(BaseCommand):
         return (
             Trigger(trigger='dummy1',
                     description='Dummy command',
-                    callback=self.do_trigger_1),
+                    callback=self.do_trigger_1,
+                    status=False),
             Trigger(trigger='dummy2',
                     description='Dummy command',
-                    callback=self.do_trigger_2),
+                    callback=self.do_trigger_2,
+                    status=False),
         )
 
     @BaseCommand.call_trigger

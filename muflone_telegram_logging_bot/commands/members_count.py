@@ -46,7 +46,8 @@ class CommandMembersCount(BaseCommand):
         return (
             Trigger(trigger='members_count',
                     description='Collect members count statistics',
-                    callback=self.do_trigger),
+                    callback=self.do_trigger,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

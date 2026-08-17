@@ -38,10 +38,12 @@ class CommandPing(BaseCommand):
         return (
             Trigger(trigger='ping',
                     description='Ping if the bot is alive',
-                    callback=self.do_trigger_ping),
+                    callback=self.do_trigger_ping,
+                    status=True),
             Trigger(trigger='pong',
                     description='Pong if the bot is alive',
-                    callback=self.do_trigger_pong),
+                    callback=self.do_trigger_pong,
+                    status=True),
         )
 
     @BaseCommand.call_trigger

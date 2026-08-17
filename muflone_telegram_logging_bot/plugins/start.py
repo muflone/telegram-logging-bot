@@ -20,7 +20,7 @@
 
 from typing import TYPE_CHECKING
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     import telegram.ext
 
 
-class CommandPing(BaseCommand):
+class PluginStart(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -36,30 +36,17 @@ class CommandPing(BaseCommand):
         :return: tuple of Trigger
         """
         return (
-            Trigger(trigger='ping',
-                    description='Ping if the bot is alive',
-                    callback=self.do_trigger_ping,
-                    status=True),
-            Trigger(trigger='pong',
-                    description='Pong if the bot is alive',
-                    callback=self.do_trigger_pong,
+            Trigger(trigger='start',
+                    description=None,
+                    callback=self.do_trigger,
                     status=True),
         )
 
-    @BaseCommand.call_trigger
-    async def do_trigger_ping(self,
-                              update: telegram.Update,
-                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              trigger: Trigger,
-                              ) -> None:
+    @BasePlugin.call_trigger
+    async def do_trigger(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         trigger: Trigger,
+                         ) -> None:
         await update.effective_message.reply_text(
-            text='PONG!')
-
-    @BaseCommand.call_trigger
-    async def do_trigger_pong(self,
-                              update: telegram.Update,
-                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              trigger: Trigger,
-                              ) -> None:
-        await update.effective_message.reply_text(
-            text='PING!')
+            text='For the commands help use /help!')

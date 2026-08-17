@@ -23,8 +23,8 @@ from typing import TYPE_CHECKING
 
 import telegram.ext
 
-from .commands.base import BaseCommand
 from .databases import Databases
+from .plugins.base import BasePlugin
 
 if TYPE_CHECKING:
     import pathlib
@@ -37,7 +37,7 @@ class Bot:
         self.application = None
         self.bot = None
         self.telegram_token = token
-        self.commands = None
+        self.plugins = None
         self.databases = Databases(filepath=data_dir)
         self.triggers = {}
         self.background_tasks = []
@@ -47,10 +47,10 @@ class Bot:
         """
         Run the bot
         """
-        self.commands = BaseCommand.load_commands(bot=self)
-        for command in self.commands.values():
-            # Collect background tasks for each command
-            if new_tasks := command.get_background_tasks():
+        self.plugins = BasePlugin.load_plugins(bot=self)
+        for plugin in self.plugins.values():
+            # Collect background tasks for each plugin
+            if new_tasks := plugin.get_background_tasks():
                 self.background_tasks.extend(new_tasks)
         self.application = (telegram.ext.Application.builder()
                             .token(token=self.telegram_token)
@@ -58,9 +58,9 @@ class Bot:
                             .build()
                             )
         self.bot = self.application.bot
-        # Setup commands
-        for command in self.commands.values():
-            command.setup(app=self.application)
+        # Setup plugins
+        for plugin in self.plugins.values():
+            plugin.setup(app=self.application)
         # Run the bot
         self.application.run_polling(
             allowed_updates=telegram.Update.ALL_TYPES)
@@ -77,6 +77,6 @@ class Bot:
             for trigger in self.triggers.values()
             if trigger.trigger and trigger.description
         ])
-        # Start all the background tasks from each command
+        # Start all the background tasks from each plugin
         for task in self.background_tasks:
             asyncio.create_task(task())

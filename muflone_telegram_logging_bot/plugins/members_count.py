@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 import telegram
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..database import Database
 from ..trigger import Trigger
 from .. import extras
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     import telegram.ext
 
 
-class CommandMembersCount(BaseCommand):
+class PluginMembersCount(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -50,7 +50,7 @@ class CommandMembersCount(BaseCommand):
                     status=True),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,

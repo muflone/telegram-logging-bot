@@ -23,14 +23,14 @@ from typing import TYPE_CHECKING
 
 import telegram.ext
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
     from typing import Callable
 
 
-class CommandDummy(BaseCommand):
+class PluginDummy(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -48,7 +48,7 @@ class CommandDummy(BaseCommand):
                     status=False),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger_1(self,
                            update: telegram.Update,
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
@@ -57,7 +57,7 @@ class CommandDummy(BaseCommand):
         await update.effective_message.reply_text(
             text='dummy1')
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger_2(self,
                            update: telegram.Update,
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,

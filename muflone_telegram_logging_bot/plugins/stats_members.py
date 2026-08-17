@@ -29,7 +29,7 @@ import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..image import load_font
 from ..trigger import Trigger
 
@@ -49,7 +49,7 @@ LINE_COLOR = '#2877d5'
 TEXT_COLOR = '#9aa0a6'
 
 
-class CommandGrowth(BaseCommand):
+class PluginStatsMembers(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -61,7 +61,7 @@ class CommandGrowth(BaseCommand):
                     status=True),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,

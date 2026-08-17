@@ -38,34 +38,34 @@ if TYPE_CHECKING:
     from ..bot import Bot
 
 
-class BaseCommand(object):
+class BasePlugin(object):
     def __init__(self,
                  bot: Bot):
         self.bot = bot
 
     @staticmethod
-    def load_commands(bot: 'Bot') -> dict[str, Self]:
+    def load_plugins(bot: 'Bot') -> dict[str, Self]:
         """
-        Discover and instantiate all commands available in this package.
+        Discover and instantiate all plugins available in this package.
         """
-        commands = {}
-        commands_package = importlib.import_module(__package__)
+        plugins = {}
+        plugins_package = importlib.import_module(__package__)
         for module_info in pkgutil.iter_modules(
-                path=commands_package.__path__,
-                prefix=f'{commands_package.__name__}.'):
+                path=plugins_package.__path__,
+                prefix=f'{plugins_package.__name__}.'):
             module = importlib.import_module(module_info.name)
-            for _, command_class in inspect.getmembers(module,
-                                                       inspect.isclass):
-                if command_class is BaseCommand:
+            for _, plugin_class in inspect.getmembers(module,
+                                                      inspect.isclass):
+                if plugin_class is BasePlugin:
                     continue
-                elif not issubclass(command_class, BaseCommand):
+                elif not issubclass(plugin_class, BasePlugin):
                     continue
-                elif command_class.__module__ != module.__name__:
+                elif plugin_class.__module__ != module.__name__:
                     continue
                 # Instance the plugin module
-                command = command_class(bot=bot)
-                commands[command_class.__name__] = command
-        return commands
+                plugin = plugin_class(bot=bot)
+                plugins[plugin_class.__name__] = plugin
+        return plugins
 
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
@@ -95,7 +95,7 @@ class BaseCommand(object):
     def setup(self,
               app: telegram.ext.Application) -> None:
         """
-        Setup command logic
+        Setup plugin logic
         """
         for trigger in self.get_triggers():
             if trigger.trigger in self.bot.triggers:

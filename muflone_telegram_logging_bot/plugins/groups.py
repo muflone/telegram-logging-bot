@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 import telegram
 
-from .base import BaseCommand
+from .base import BasePlugin
 from .. import extras
 from ..database import Database
 from ..trigger import Trigger
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from ..bot import Bot
 
 
-class CommandGroups(BaseCommand):
+class PluginGroups(BasePlugin):
     def __init__(self,
                  bot: Bot):
         super().__init__(bot=bot)
@@ -56,7 +56,7 @@ class CommandGroups(BaseCommand):
                     status=True),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
@@ -71,7 +71,7 @@ class CommandGroups(BaseCommand):
     def setup(self,
               app: telegram.ext.Application) -> None:
         """
-        Setup command logic
+        Setup plugin logic
         """
         super().setup(app=app)
         self.load_users_cache()

@@ -20,7 +20,7 @@
 
 from typing import TYPE_CHECKING
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..trigger import Trigger
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     import telegram.ext
 
 
-class CommandStart(BaseCommand):
+class PluginHelp(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -36,17 +36,24 @@ class CommandStart(BaseCommand):
         :return: tuple of Trigger
         """
         return (
-            Trigger(trigger='start',
+            Trigger(trigger='help',
                     description=None,
                     callback=self.do_trigger,
                     status=True),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                          trigger: Trigger,
                          ) -> None:
+        commands_description = []
+        for trigger in self.bot.triggers.values():
+            if trigger.trigger and trigger.description:
+                commands_description.append(
+                    f'/{trigger.trigger}\n'
+                    f'{trigger.description}\n')
         await update.effective_message.reply_text(
-            text='For the commands help use /help!')
+            text='\n'.join(commands_description) or
+                 'No commands available.')

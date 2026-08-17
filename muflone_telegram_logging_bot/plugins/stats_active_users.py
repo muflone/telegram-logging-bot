@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 import PIL.Image
 import PIL.ImageDraw
 
-from .base import BaseCommand
+from .base import BasePlugin
 from ..image import (get_user_avatar,
                      load_font)
 from ..trigger import Trigger
@@ -43,7 +43,7 @@ NAME_COLOR = '#ffffff'
 TEXT_COLOR = '#9aa0a6'
 
 
-class CommandStats(BaseCommand):
+class PluginStatsActiveUsers(BasePlugin):
     def get_triggers(self) -> tuple[Trigger, ...]:
         """
         Get triggers and callbacks
@@ -57,7 +57,7 @@ class CommandStats(BaseCommand):
                     status=True),
         )
 
-    @BaseCommand.call_trigger
+    @BasePlugin.call_trigger
     async def do_trigger(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,

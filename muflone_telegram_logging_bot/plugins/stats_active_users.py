@@ -147,7 +147,7 @@ class PluginStatsActiveUsers(BasePlugin):
                 FROM messages
                 LEFT JOIN users
                    ON users.user_id = messages.user_id
-                WHERE date(messages.date) = ?
+                WHERE DATE(messages.date) = ?
                 GROUP BY messages.user_id, users.username
                 ORDER BY messages_count DESC
                 LIMIT ?
@@ -170,8 +170,8 @@ class PluginStatsActiveUsers(BasePlugin):
         :param limit: number of results
         :return: list of Rows with data
         """
-        end_date = datetime.datetime.now()
-        start_date = end_date - datetime.timedelta(hours=24)
+        date_end = datetime.datetime.now()
+        date_start = date_end - datetime.timedelta(hours=24)
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
@@ -194,8 +194,8 @@ class PluginStatsActiveUsers(BasePlugin):
                 LIMIT ?
                 ''',
                 (
-                    start_date.isoformat(),
-                    end_date.isoformat(),
+                    date_start.isoformat(),
+                    date_end.isoformat(),
                     limit
                 )
             ).fetchall()

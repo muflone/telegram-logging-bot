@@ -63,17 +63,30 @@ class CommandStats(BaseCommand):
                          trigger: Trigger,
                          ) -> None:
         chat = update.effective_chat
-        if selected_date := self.parse_date(context=context):
-            if rows := self.get_top_members(chat=chat,
+        if context.args:
+            # Use parsed date if specified
+            if selected_date := self.parse_date(context=context):
+                rows = self.get_top_members(chat=chat,
                                             date=selected_date,
-                                            limit=15):
+                                            limit=15)
+                date_title = f'{selected_date.isoformat()} (UTC)'
+            valid_date = selected_date is not None
+        else:
+            # Use the latest 24 hours if no date was specified
+            rows = self.get_top_members_24_hours(chat=chat,
+                                                 limit=15)
+            date_title = 'the latest 24 hours'
+            valid_date = True
+        if valid_date:
+            graph_title = f'Top members for {date_title}'
+            if rows:
                 # Results found
                 image = await self.create_graph_image(
                     rows=rows,
-                    date=selected_date)
+                    title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
-                    caption='Top members')
+                    caption=graph_title)
             else:
                 # No results
                 await update.effective_message.reply_text(
@@ -123,7 +136,6 @@ class CommandStats(BaseCommand):
             result = connection.execute(
                 '''
                 SELECT
-                  date(messages.date) AS date,
                   messages.user_id AS user_id,
                   users.username AS username,
                   COALESCE(users.first_name, '') AS first_name,
@@ -134,8 +146,8 @@ class CommandStats(BaseCommand):
                 LEFT JOIN users
                    ON users.user_id = messages.user_id
                 WHERE date(messages.date) = ?
-                GROUP BY date(messages.date), messages.user_id, users.username
-                ORDER BY date DESC, messages_count DESC
+                GROUP BY messages.user_id, users.username
+                ORDER BY messages_count DESC
                 LIMIT ?
                 ''',
                 (
@@ -145,15 +157,57 @@ class CommandStats(BaseCommand):
             ).fetchall()
         return result
 
+    def get_top_members_24_hours(self,
+                                 chat: telegram.Chat,
+                                 limit: int,
+                                 ) -> list[sqlite3.Row]:
+        """
+        Get the most active members by messages count in the latest 24 hours
+
+        :param chat: chat details
+        :param limit: number of results
+        :return: list of Rows with data
+        """
+        end_date = datetime.datetime.now()
+        start_date = end_date - datetime.timedelta(hours=24)
+        database = self.bot.databases.get_database(
+            directory_name=str(chat.id))
+        with database.open() as connection:
+            self.update_database_schema(connection=connection)
+            result = connection.execute(
+                '''
+                SELECT
+                  messages.user_id AS user_id,
+                  users.username AS username,
+                  COALESCE(users.first_name, '') AS first_name,
+                  COALESCE(users.last_name, '') AS last_name,
+                  COUNT(*) AS messages_count,
+                  ROUND(AVG(LENGTH(messages.text)), 0) AS average_length
+                FROM messages
+                LEFT JOIN users
+                   ON users.user_id = messages.user_id
+                WHERE messages.date BETWEEN ? AND ?
+                GROUP BY messages.user_id, users.username
+                ORDER BY messages_count DESC
+                LIMIT ?
+                ''',
+                (
+                    start_date.isoformat(),
+                    end_date.isoformat(),
+                    limit
+                )
+            ).fetchall()
+        return result
+
     async def create_graph_image(self,
                                  rows: list[sqlite3.Row],
-                                 date: datetime.date,
+                                 title: str,
                                  ) -> io.BytesIO:
         """
         Create an image with the most active members
 
         :param rows: list of Rows with data
-        :param date: selected date
+        :param title: graph title
         :return: binary data with the graph image
         """
         width = 450
@@ -172,7 +226,7 @@ class CommandStats(BaseCommand):
         name_font = load_font(size=13, bold=True)
         stats_font = load_font(size=12)
         draw.text(xy=(padding_x, padding_top),
-                  text=f'Top members for {date.isoformat()}',
+                  text=title,
                   fill=TITLE_COLOR,
                   font=title_font)
         y = padding_top + title_height + 6

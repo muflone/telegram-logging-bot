@@ -49,11 +49,11 @@ class PluginHelp(BasePlugin):
                          command: Command,
                          ) -> None:
         commands_description = []
-        for command in self.bot.commands.values():
-            if command.trigger and command.description:
+        for item in self.bot.commands.values():
+            if item.trigger and item.description:
                 commands_description.append(
-                    f'/{command.trigger}\n'
-                    f'{command.description}\n')
+                    f'/{item.trigger}\n'
+                    f'{item.description}\n')
         await update.effective_message.reply_text(
             text='\n'.join(commands_description) or
                  'No commands available.')

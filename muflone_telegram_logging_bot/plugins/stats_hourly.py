@@ -100,11 +100,11 @@ class PluginStatsHourly(BasePlugin):
             else:
                 # No results
                 await update.effective_message.reply_text(
-                    text=f'No results from {date_start.isoformat()}'
+                    text=f'No results from {date_start.isoformat()} '
                          f'to {date_end.isoformat()}')
         else:
             await update.effective_message.reply_text(
-                text=f'Usage: /{command.trigger} [YYYY-MM-DD]')
+                text=f'Usage: /{command.trigger} [YYYY-MM-DD] [YYYY-MM-DD]')
 
     def parse_dates(self,
                     context: telegram.ext.ContextTypes.DEFAULT_TYPE,

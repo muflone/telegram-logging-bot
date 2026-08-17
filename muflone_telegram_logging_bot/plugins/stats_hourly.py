@@ -121,8 +121,11 @@ class PluginStatsHourly(BasePlugin):
                 # Try to parse the specified date
                 date_1 = datetime.date.strptime(context.args[0],
                                                 '%Y-%m-%d')
-                date_2 = datetime.date.strptime(context.args[1],
-                                                '%Y-%m-%d')
+                try:
+                    date_2 = datetime.date.strptime(context.args[1],
+                                                    '%Y-%m-%d')
+                except IndexError:
+                    date_2 = date_1
             except ValueError:
                 date_1 = None
                 date_2 = None

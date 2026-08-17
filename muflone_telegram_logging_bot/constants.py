@@ -18,4 +18,4 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-APP_VERSION = '0.3.6'
+APP_VERSION = '0.4.0'

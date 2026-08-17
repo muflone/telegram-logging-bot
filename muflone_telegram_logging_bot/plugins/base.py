@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 
 import telegram.ext
 
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     from typing import Callable, Self
@@ -67,16 +67,16 @@ class BasePlugin(object):
                 plugins[plugin_class.__name__] = plugin
         return plugins
 
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return ()
 
     @staticmethod
-    def call_trigger(callback: Callable) -> Callable:
+    def call_command(callback: Callable) -> Callable:
         @functools.wraps(callback)
         def wrapper(*args, **kwargs):
             command = args[0]
@@ -97,22 +97,22 @@ class BasePlugin(object):
         """
         Setup plugin logic
         """
-        for trigger in self.get_triggers():
-            if trigger.trigger in self.bot.triggers:
+        for command in self.get_commands():
+            if command.trigger in self.bot.commands:
                 raise ValueError(
-                    f'Duplicate command name: {trigger.trigger}')
-            if trigger.status:
-                self.bot.triggers[trigger.trigger] = trigger
-                logging.info(f'Setup trigger /{trigger.trigger} '
+                    f'Duplicate command name: {command.trigger}')
+            if command.status:
+                self.bot.commands[command.trigger] = command
+                logging.info(f'Setup command /{command.trigger} '
                              f'for {self.__class__.__name__}')
                 app.add_handler(
                     handler=telegram.ext.CommandHandler(
-                        command=trigger.trigger,
-                        callback=functools.partial(trigger.callback,
-                                                   trigger=trigger)),
+                        command=command.trigger,
+                        callback=functools.partial(command.callback,
+                                                   command=command)),
                     group=self.bot.next_handler_group)
             else:
-                logging.info(f'Skipped trigger /{trigger.trigger} '
+                logging.info(f'Skipped command /{command.trigger} '
                              f'for {self.__class__.__name__}')
         self.bot.next_handler_group += 1
 

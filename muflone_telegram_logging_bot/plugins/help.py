@@ -21,7 +21,7 @@
 from typing import TYPE_CHECKING
 
 from .base import BasePlugin
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     import telegram
@@ -29,31 +29,31 @@ if TYPE_CHECKING:
 
 
 class PluginHelp(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='help',
+            Command(trigger='help',
                     description=None,
-                    callback=self.do_trigger,
+                    callback=self.do_command,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger(self,
+    @BasePlugin.call_command
+    async def do_command(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
+                         command: Command,
                          ) -> None:
         commands_description = []
-        for trigger in self.bot.triggers.values():
-            if trigger.trigger and trigger.description:
+        for command in self.bot.commands.values():
+            if command.trigger and command.description:
                 commands_description.append(
-                    f'/{trigger.trigger}\n'
-                    f'{trigger.description}\n')
+                    f'/{command.trigger}\n'
+                    f'{command.description}\n')
         await update.effective_message.reply_text(
             text='\n'.join(commands_description) or
                  'No commands available.')

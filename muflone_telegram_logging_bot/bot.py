@@ -39,7 +39,7 @@ class Bot:
         self.telegram_token = token
         self.plugins = None
         self.databases = Databases(filepath=data_dir)
-        self.triggers = {}
+        self.commands = {}
         self.background_tasks = []
         self.next_handler_group = 1
 
@@ -72,10 +72,10 @@ class Bot:
         """
         # Setup commands
         await self.bot.set_my_commands([
-            telegram.BotCommand(command=trigger.trigger,
-                                description=trigger.description)
-            for trigger in self.triggers.values()
-            if trigger.trigger and trigger.description
+            telegram.BotCommand(command=command.trigger,
+                                description=command.description)
+            for command in self.commands.values()
+            if command.trigger and command.description
         ])
         # Start all the background tasks from each plugin
         for task in self.background_tasks:

@@ -24,44 +24,44 @@ from typing import TYPE_CHECKING
 import telegram.ext
 
 from .base import BasePlugin
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     from typing import Callable
 
 
 class PluginDummy(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='dummy1',
+            Command(trigger='dummy1',
                     description='Dummy command',
-                    callback=self.do_trigger_1,
+                    callback=self.do_command_1,
                     status=False),
-            Trigger(trigger='dummy2',
+            Command(trigger='dummy2',
                     description='Dummy command',
-                    callback=self.do_trigger_2,
+                    callback=self.do_command_2,
                     status=False),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger_1(self,
+    @BasePlugin.call_command
+    async def do_command_1(self,
                            update: telegram.Update,
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                           trigger: Trigger,
+                           command: Command,
                            ) -> None:
         await update.effective_message.reply_text(
             text='dummy1')
 
-    @BasePlugin.call_trigger
-    async def do_trigger_2(self,
+    @BasePlugin.call_command
+    async def do_command_2(self,
                            update: telegram.Update,
                            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                           trigger: Trigger,
+                           command: Command,
                            ) -> None:
         await update.effective_message.reply_text(
             text='dummy2')

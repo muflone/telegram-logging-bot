@@ -26,7 +26,7 @@ import telegram
 
 from .base import BasePlugin
 from ..database import Database
-from ..trigger import Trigger
+from ..command import Command
 from .. import extras
 
 if TYPE_CHECKING:
@@ -37,26 +37,26 @@ if TYPE_CHECKING:
 
 
 class PluginMembersCount(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='members_count',
+            Command(trigger='members_count',
                     description='Collect members count statistics',
-                    callback=self.do_trigger,
+                    callback=self.do_command,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger(self,
+    @BasePlugin.call_command
+    async def do_command(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
+                         command: Command,
                          ) -> None:
-        result = await self.collect_members_count(source='trigger')
+        result = await self.collect_members_count(source='command')
         await update.effective_message.reply_text(
             text=f'Members count statistics collected: {result}')
 

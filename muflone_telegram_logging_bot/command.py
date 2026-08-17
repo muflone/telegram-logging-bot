@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Trigger:
+class Command:
     trigger: str
     description: Optional[str]
     callback: Callable

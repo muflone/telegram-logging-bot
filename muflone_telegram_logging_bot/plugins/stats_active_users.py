@@ -28,7 +28,7 @@ import PIL.ImageDraw
 from .base import BasePlugin
 from ..image import (get_user_avatar,
                      load_font)
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -44,24 +44,24 @@ TEXT_COLOR = '#9aa0a6'
 
 
 class PluginStatsActiveUsers(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='stats_active_users',
+            Command(trigger='stats_active_users',
                     description='Show most active users by message numbers',
-                    callback=self.do_trigger,
+                    callback=self.do_command,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger(self,
+    @BasePlugin.call_command
+    async def do_command(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
+                         command: Command,
                          ) -> None:
         chat = update.effective_chat
         if context.args:
@@ -94,7 +94,7 @@ class PluginStatsActiveUsers(BasePlugin):
                     text=f'No results for {selected_date.isoformat()}')
         else:
             await update.effective_message.reply_text(
-                text=f'Usage: /{trigger.trigger} [YYYY-MM-DD]')
+                text=f'Usage: /{command.trigger} [YYYY-MM-DD]')
 
     def parse_date(self,
                    context: telegram.ext.ContextTypes.DEFAULT_TYPE,

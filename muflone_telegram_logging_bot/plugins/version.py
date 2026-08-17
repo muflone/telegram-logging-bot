@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 from .base import BasePlugin
 
 from ..constants import APP_VERSION
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     import telegram
@@ -31,24 +31,24 @@ if TYPE_CHECKING:
 
 
 class PluginVersion(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='version',
+            Command(trigger='version',
                     description='Get the bot version',
-                    callback=self.do_trigger,
+                    callback=self.do_command,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger(self,
+    @BasePlugin.call_command
+    async def do_command(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
+                         command: Command,
                          ) -> None:
         await update.effective_message.reply_text(
             text=APP_VERSION)

@@ -21,7 +21,7 @@
 from typing import TYPE_CHECKING
 
 from .base import BasePlugin
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     import telegram
@@ -29,37 +29,37 @@ if TYPE_CHECKING:
 
 
 class PluginPing(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
 
-        :return: tuple of Trigger
+        :return: tuple of Command
         """
         return (
-            Trigger(trigger='ping',
+            Command(trigger='ping',
                     description='Ping if the bot is alive',
-                    callback=self.do_trigger_ping,
+                    callback=self.do_command_ping,
                     status=True),
-            Trigger(trigger='pong',
+            Command(trigger='pong',
                     description='Pong if the bot is alive',
-                    callback=self.do_trigger_pong,
+                    callback=self.do_command_pong,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger_ping(self,
+    @BasePlugin.call_command
+    async def do_command_ping(self,
                               update: telegram.Update,
                               context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              trigger: Trigger,
+                              command: Command,
                               ) -> None:
         await update.effective_message.reply_text(
             text='PONG!')
 
-    @BasePlugin.call_trigger
-    async def do_trigger_pong(self,
+    @BasePlugin.call_command
+    async def do_command_pong(self,
                               update: telegram.Update,
                               context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              trigger: Trigger,
+                              command: Command,
                               ) -> None:
         await update.effective_message.reply_text(
             text='PING!')

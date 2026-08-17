@@ -31,7 +31,7 @@ import PIL.ImageFont
 
 from .base import BasePlugin
 from ..image import load_font
-from ..trigger import Trigger
+from ..command import Command
 
 if TYPE_CHECKING:
     import sqlite3
@@ -50,22 +50,22 @@ TEXT_COLOR = '#9aa0a6'
 
 
 class PluginStatsMembers(BasePlugin):
-    def get_triggers(self) -> tuple[Trigger, ...]:
+    def get_commands(self) -> tuple[Command, ...]:
         """
-        Get triggers and callbacks
+        Get commands and callbacks
         """
         return (
-            Trigger(trigger='stats_members',
+            Command(trigger='stats_members',
                     description='Show members growth chart',
-                    callback=self.do_trigger,
+                    callback=self.do_command,
                     status=True),
         )
 
-    @BasePlugin.call_trigger
-    async def do_trigger(self,
+    @BasePlugin.call_command
+    async def do_command(self,
                          update: telegram.Update,
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                         trigger: Trigger,
+                         command: Command,
                          ) -> None:
         chat = update.effective_chat
         if dates := self.parse_dates(context=context):
@@ -92,7 +92,7 @@ class PluginStatsMembers(BasePlugin):
                           f'{end_date.isoformat()}'))
         else:
             await update.effective_message.reply_text(
-                text=f'Usage: /{trigger.trigger} [YYYY-MM-DD] [YYYY-MM-DD]')
+                text=f'Usage: /{command.trigger} [YYYY-MM-DD] [YYYY-MM-DD]')
 
     def parse_dates(self,
                     context: telegram.ext.ContextTypes.DEFAULT_TYPE,

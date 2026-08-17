@@ -79,7 +79,7 @@ class CommandStats(BaseCommand):
             date_title = 'the latest 24 hours'
             valid_date = True
         if valid_date:
-            graph_title = f'Top members for {date_title}'
+            graph_title = f'Most active members for {date_title}'
             if rows:
                 # Results found
                 image = await self.create_graph_image(

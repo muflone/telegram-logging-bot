@@ -38,7 +38,8 @@ class PluginStats(BasePlugin):
         return (
             self.new_command(trigger='stats',
                              description='Show commands for statistics',
-                             callback=self.do_command),
+                             callback=self.do_command,
+                             include_in_list=True),
         )
 
     @BasePlugin.call_command

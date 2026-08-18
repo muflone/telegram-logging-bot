@@ -38,7 +38,8 @@ class PluginStart(BasePlugin):
         return (
             self.new_command(trigger='start',
                              description=None,
-                             callback=self.do_command),
+                             callback=self.do_command,
+                             include_in_list=False),
         )
 
     @BasePlugin.call_command

@@ -57,7 +57,8 @@ class PluginStatsMembers(BasePlugin):
         return (
             self.new_command(trigger='stats_members',
                              description='Show members growth chart',
-                             callback=self.do_command),
+                             callback=self.do_command,
+                             include_in_list=True),
         )
 
     @BasePlugin.call_command

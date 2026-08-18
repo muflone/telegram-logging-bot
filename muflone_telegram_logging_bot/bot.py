@@ -75,7 +75,9 @@ class Bot:
             telegram.BotCommand(command=command.trigger,
                                 description=command.description)
             for command in self.commands.values()
-            if command.trigger and command.description
+            if (command.trigger and
+                command.description and
+                command.include_in_list)
         ])
         # Start all the background tasks from each plugin
         for task in self.background_tasks:

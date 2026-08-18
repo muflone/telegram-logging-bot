@@ -34,3 +34,4 @@ class Command:
     trigger: str
     description: Optional[str]
     callback: Callable
+    include_in_list: bool

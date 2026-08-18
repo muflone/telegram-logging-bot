@@ -54,7 +54,8 @@ class PluginStatsActiveUsers(BasePlugin):
             self.new_command(trigger='stats_active_users',
                              description='Show most active users by '
                                          'message numbers',
-                             callback=self.do_command),
+                             callback=self.do_command,
+                             include_in_list=True),
         )
 
     @BasePlugin.call_command

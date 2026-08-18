@@ -126,6 +126,7 @@ class BasePlugin(object):
                     trigger: str,
                     description: str,
                     callback: Callable,
+                    include_in_list: bool,
                     ) -> Command:
         """
         Create a new Command
@@ -133,9 +134,11 @@ class BasePlugin(object):
         :param trigger: command trigger
         :param description: command description
         :param callback: command callback
+        :param include_in_list: include in commands list
         :return: new Command object
         """
         return Command(plugin=self,
                        trigger=trigger,
                        description=description,
-                       callback=callback)
+                       callback=callback,
+                       include_in_list=include_in_list)

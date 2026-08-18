@@ -34,4 +34,3 @@ class Command:
     trigger: str
     description: Optional[str]
     callback: Callable
-    status: bool

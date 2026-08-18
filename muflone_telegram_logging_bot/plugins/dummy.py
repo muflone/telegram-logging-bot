@@ -40,12 +40,10 @@ class PluginDummy(BasePlugin):
         return (
             self.new_command(trigger='dummy1',
                              description='Dummy command',
-                             callback=self.do_command_1,
-                             status=False),
+                             callback=self.do_command_1),
             self.new_command(trigger='dummy2',
                              description='Dummy command',
-                             callback=self.do_command_2,
-                             status=False),
+                             callback=self.do_command_2),
         )
 
     @BasePlugin.call_command

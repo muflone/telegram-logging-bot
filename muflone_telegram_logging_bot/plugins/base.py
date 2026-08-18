@@ -101,19 +101,15 @@ class BasePlugin(object):
             if command.trigger in self.bot.commands:
                 raise ValueError(
                     f'Duplicate command name: {command.trigger}')
-            if command.status:
-                self.bot.commands[command.trigger] = command
-                logging.info(f'Setup command /{command.trigger} '
-                             f'for {self.__class__.__name__}')
-                app.add_handler(
-                    handler=telegram.ext.CommandHandler(
-                        command=command.trigger,
-                        callback=functools.partial(command.callback,
-                                                   command=command)),
-                    group=self.bot.next_handler_group)
-            else:
-                logging.info(f'Skipped command /{command.trigger} '
-                             f'for {self.__class__.__name__}')
+            self.bot.commands[command.trigger] = command
+            logging.info(f'Setup command /{command.trigger} '
+                         f'for {self.__class__.__name__}')
+            app.add_handler(
+                handler=telegram.ext.CommandHandler(
+                    command=command.trigger,
+                    callback=functools.partial(command.callback,
+                                               command=command)),
+                group=self.bot.next_handler_group)
         self.bot.next_handler_group += 1
 
     def update_database_schema(self,
@@ -130,7 +126,6 @@ class BasePlugin(object):
                     trigger: str,
                     description: str,
                     callback: Callable,
-                    status: bool
                     ) -> Command:
         """
         Create a new Command
@@ -138,11 +133,9 @@ class BasePlugin(object):
         :param trigger: command trigger
         :param description: command description
         :param callback: command callback
-        :param status: command status
         :return: new Command object
         """
         return Command(plugin=self,
                        trigger=trigger,
                        description=description,
-                       callback=callback,
-                       status=status)
+                       callback=callback)

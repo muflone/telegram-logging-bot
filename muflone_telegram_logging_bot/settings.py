@@ -43,6 +43,7 @@ COMMAND_SCOPE = 'scope'
 COMMAND_STATUS = 'status'
 
 SCOPE_PRIVATE = 'private'
+SCOPE_GROUP = 'group'
 
 
 class Settings:
@@ -308,7 +309,7 @@ class Settings:
                                                        []),
             COMMAND_SCOPE: command_settings.get(COMMAND_SCOPE,
                                                 [SCOPE_PRIVATE,
-                                                 'group',
+                                                 SCOPE_GROUP,
                                                  'supergroup']),
         }
 
@@ -479,7 +480,7 @@ class Settings:
         if access_lists is not None:
             command[COMMAND_ACCESS_LISTS] = access_lists
         command.setdefault(COMMAND_SCOPE, [SCOPE_PRIVATE,
-                                           'group',
+                                           SCOPE_GROUP,
                                            'supergroup'])
         if scope is not None:
             command[COMMAND_SCOPE] = scope

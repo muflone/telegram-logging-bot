@@ -53,7 +53,8 @@ class PluginGroups(BasePlugin):
             self.new_command(trigger='groups',
                              description='List the managed groups',
                              callback=self.do_command,
-                             include_in_list=False),
+                             include_in_list=False,
+                             sequence=300),
         )
 
     @BasePlugin.call_command

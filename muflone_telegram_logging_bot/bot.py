@@ -61,6 +61,12 @@ class Bot:
         # Setup plugins
         for plugin in self.plugins.values():
             plugin.setup(app=self.application)
+        # Sort the commands by sequence
+        self.commands = {
+            key: self.commands[key]
+            for key in sorted(self.commands,
+                              key=lambda i: self.commands[i].sequence)
+        }
         # Run the bot
         self.application.run_polling(
             allowed_updates=telegram.Update.ALL_TYPES)

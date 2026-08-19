@@ -39,7 +39,8 @@ class PluginHelp(BasePlugin):
             self.new_command(trigger='help',
                              description='Show help',
                              callback=self.do_command,
-                             include_in_list=True),
+                             include_in_list=True,
+                             sequence=20),
         )
 
     @BasePlugin.call_command

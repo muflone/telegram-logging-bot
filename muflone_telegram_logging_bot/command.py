@@ -35,3 +35,4 @@ class Command:
     description: Optional[str]
     callback: Callable
     include_in_list: bool
+    sequence: int

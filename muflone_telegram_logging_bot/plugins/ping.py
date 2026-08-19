@@ -39,11 +39,13 @@ class PluginPing(BasePlugin):
             self.new_command(trigger='ping',
                              description='Ping if the bot is alive',
                              callback=self.do_command_ping,
-                             include_in_list=True),
+                             include_in_list=True,
+                             sequence=100),
             self.new_command(trigger='pong',
                              description='Pong if the bot is alive',
                              callback=self.do_command_pong,
-                             include_in_list=True),
+                             include_in_list=True,
+                             sequence=101),
         )
 
     @BasePlugin.call_command

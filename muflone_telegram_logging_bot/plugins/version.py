@@ -41,7 +41,8 @@ class PluginVersion(BasePlugin):
             self.new_command(trigger='version',
                              description='Get the bot version',
                              callback=self.do_command,
-                             include_in_list=True),
+                             include_in_list=True,
+                             sequence=30),
         )
 
     @BasePlugin.call_command

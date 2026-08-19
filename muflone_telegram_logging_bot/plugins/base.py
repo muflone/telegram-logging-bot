@@ -127,6 +127,7 @@ class BasePlugin(object):
                     description: str,
                     callback: Callable,
                     include_in_list: bool,
+                    sequence: int,
                     ) -> Command:
         """
         Create a new Command
@@ -135,10 +136,12 @@ class BasePlugin(object):
         :param description: command description
         :param callback: command callback
         :param include_in_list: include in commands list
+        :param sequence: ordering sequence
         :return: new Command object
         """
         return Command(plugin=self,
                        trigger=trigger,
                        description=description,
                        callback=callback,
-                       include_in_list=include_in_list)
+                       include_in_list=include_in_list,
+                       sequence=sequence)

@@ -41,11 +41,13 @@ class PluginDummy(BasePlugin):
             self.new_command(trigger='dummy1',
                              description='Dummy command',
                              callback=self.do_command_1,
-                             include_in_list=False),
+                             include_in_list=False,
+                             sequence=900),
             self.new_command(trigger='dummy2',
                              description='Dummy command',
                              callback=self.do_command_2,
-                             include_in_list=False),
+                             include_in_list=False,
+                             sequence=901),
         )
 
     @BasePlugin.call_command

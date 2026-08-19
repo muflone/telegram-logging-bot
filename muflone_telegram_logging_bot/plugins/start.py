@@ -37,7 +37,7 @@ class PluginStart(BasePlugin):
         """
         return (
             self.new_command(trigger='start',
-                             description=None,
+                             description='Start bot',
                              callback=self.do_command,
                              include_in_list=False,
                              sequence=10),

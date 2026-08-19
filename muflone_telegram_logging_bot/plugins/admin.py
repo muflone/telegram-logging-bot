@@ -24,7 +24,7 @@ import prettytable
 
 from .base import BasePlugin
 from ..command import Command
-from ..settings import BOT_ADMINS, BOT_OWNERS
+from ..settings import BOT_ADMINS, BOT_OWNERS, DENIED_USERS
 
 
 class PluginAdmin(BasePlugin):
@@ -207,12 +207,12 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if action == 'add':
-                self.bot.settings.add_global_user(group_name='denied_users',
+                self.bot.settings.add_global_user(group_name=DENIED_USERS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} added to excluded users')
             elif action == 'remove':
-                self.bot.settings.remove_global_user(group_name='denied_users',
+                self.bot.settings.remove_global_user(group_name=DENIED_USERS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from excluded users')

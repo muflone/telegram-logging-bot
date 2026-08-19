@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 
 BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
+DENIED_USERS = 'denied_users'
 EVERYONE = 'everyone'
 
 
@@ -58,7 +59,7 @@ class Settings:
         return {
             BOT_OWNERS: [],
             BOT_ADMINS: [],
-            'denied_users': [],
+            DENIED_USERS: [],
             'enabled_chats': [],
             'enabled_commands': {},
         }
@@ -129,7 +130,7 @@ class Settings:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
             result.setdefault('groups', {})
-            result['groups'].setdefault('denied_users', [])
+            result['groups'].setdefault(DENIED_USERS, [])
             result['groups'].setdefault('chat_admin', [])
         return result
 
@@ -213,7 +214,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.data.get('denied_users', []))
+            users_list=self.data.get(DENIED_USERS, []))
 
     def is_chat_enabled(self,
                         chat: Optional[telegram.Chat]
@@ -264,7 +265,7 @@ class Settings:
         """
         return self.is_in_chat_group(chat_id=chat_id,
                                      user=user,
-                                     group='denied_users')
+                                     group=DENIED_USERS)
 
     def is_chat_admin(self,
                       chat_id: int | str,

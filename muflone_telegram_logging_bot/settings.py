@@ -44,6 +44,7 @@ COMMAND_STATUS = 'status'
 
 SCOPE_PRIVATE = 'private'
 SCOPE_GROUP = 'group'
+SCOPE_SUPERGROUP = 'supergroup'
 
 
 class Settings:
@@ -310,7 +311,7 @@ class Settings:
             COMMAND_SCOPE: command_settings.get(COMMAND_SCOPE,
                                                 [SCOPE_PRIVATE,
                                                  SCOPE_GROUP,
-                                                 'supergroup']),
+                                                 SCOPE_SUPERGROUP]),
         }
 
     def can_run_command(self,
@@ -481,7 +482,7 @@ class Settings:
             command[COMMAND_ACCESS_LISTS] = access_lists
         command.setdefault(COMMAND_SCOPE, [SCOPE_PRIVATE,
                                            SCOPE_GROUP,
-                                           'supergroup'])
+                                           SCOPE_SUPERGROUP])
         if scope is not None:
             command[COMMAND_SCOPE] = scope
         self.save()

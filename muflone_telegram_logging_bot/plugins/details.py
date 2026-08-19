@@ -41,6 +41,11 @@ class PluginDetails(BasePlugin):
                              callback=self.do_command_chat_details,
                              include_in_list=False,
                              sequence=30),
+            self.new_command(trigger='user_details',
+                             description='User details',
+                             callback=self.do_command_user_details,
+                             include_in_list=False,
+                             sequence=31),
         )
 
     @BasePlugin.call_command
@@ -61,4 +66,32 @@ class PluginDetails(BasePlugin):
                   f'Title: {chat.title or ''}\n'
                   f'Description: {chat_details.description or ''}\n'
                   f'Link: {chat.link or ''}'),
+            disable_web_page_preview=True)
+
+    @BasePlugin.call_command
+    async def do_command_user_details(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        chat = update.effective_chat
+        user = update.effective_user
+        user_details = await context.bot.get_chat(chat_id=user.id)
+        chat_member = await context.bot.get_chat_member(chat_id=chat.id,
+                                                        user_id=user.id)
+        await update.effective_message.reply_text(
+            text=('User details:\n'
+                  '\n'
+                  f'ID: {user.id}\n'
+                  f'Name: {user.name or ''}\n'
+                  f'Username: {user.username or ''}\n'
+                  f'First name: {user.first_name or ''}\n'
+                  f'Last name: {user.last_name or ''}\n'
+                  f'Language: {user.language_code or ''}\n'
+                  f'Link: {user.link or ''}\n'
+                  f'Status: {chat_member.status}\n'
+                  f'Bot: {user.is_bot}\n'
+                  f'Premium: {user.is_premium}\n'
+                  f'Bio: {user_details.bio or ''}'),
             disable_web_page_preview=True)

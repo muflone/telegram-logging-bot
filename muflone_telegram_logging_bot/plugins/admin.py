@@ -49,11 +49,16 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_bot_owners,
                              include_in_list=False,
                              sequence=821),
+            self.new_command(trigger='admin_list_bot_admins',
+                             description='List bot admins',
+                             callback=self.do_command_admin_list_bot_admins,
+                             include_in_list=False,
+                             sequence=830),
             self.new_command(trigger='admin_set_bot_admins',
                              description='Set bot admins',
                              callback=self.do_command_admin_set_bot_admins,
                              include_in_list=False,
-                             sequence=830),
+                             sequence=831),
             self.new_command(trigger='admin_set_excluded',
                              description='Set excluded users',
                              callback=self.do_command_admin_set_excluded,
@@ -132,6 +137,19 @@ class PluginAdmin(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_bot_admins(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        users_list = '\n'.join(self.bot.settings.data.get('bot_admins'))
+        await update.effective_message.reply_text(
+            text=('Bot admins:\n'
+                  '\n'
+                  f'{users_list or 'None'}'))
 
     @BasePlugin.call_command
     async def do_command_admin_set_bot_admins(

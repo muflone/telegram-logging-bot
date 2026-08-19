@@ -32,12 +32,13 @@ if TYPE_CHECKING:
     from .command import Command
 
 BOT_OWNERS = 'bot_owners'
+BOT_ADMINS = 'bot_admins'
 
 
 class Settings:
     STANDARD_ACCESS_LISTS = {
         BOT_OWNERS,
-        'bot_admins',
+        BOT_ADMINS,
         'everyone',
     }
 
@@ -55,7 +56,7 @@ class Settings:
         """
         return {
             BOT_OWNERS: [],
-            'bot_admins': [],
+            BOT_ADMINS: [],
             'denied_users': [],
             'enabled_chats': [],
             'enabled_commands': {},
@@ -198,7 +199,7 @@ class Settings:
         """
         return self.is_bot_owner(user=user) or self.user_in_list(
             user=user,
-            users_list=self.data.get('bot_admins', []))
+            users_list=self.data.get(BOT_ADMINS, []))
 
     def is_global_denied_users(self,
                                user: Optional[telegram.User]
@@ -346,7 +347,7 @@ class Settings:
                     # Commands requiring bot_owner access are unchecked
                     # as is_bot_owner was previously checked
                     pass
-                elif (access == 'bot_admins' and
+                elif (access == BOT_ADMINS and
                       self.is_bot_admin(user=user)):
                     # Commands requiring bot_admin access are allowed
                     # only if the user is in the list

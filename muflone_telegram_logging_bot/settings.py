@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
 DENIED_USERS = 'denied_users'
+ENABLED_CHATS = 'enabled_chats'
 EVERYONE = 'everyone'
 
 
@@ -60,7 +61,7 @@ class Settings:
             BOT_OWNERS: [],
             BOT_ADMINS: [],
             DENIED_USERS: [],
-            'enabled_chats': [],
+            ENABLED_CHATS: [],
             'enabled_commands': {},
         }
 
@@ -230,7 +231,7 @@ class Settings:
         else:
             result = str(chat.id) in {
                 str(chat_id)
-                for chat_id in self.data.get('enabled_chats', [])
+                for chat_id in self.data.get(ENABLED_CHATS, [])
             }
         return result
 
@@ -436,7 +437,7 @@ class Settings:
         :param chat_id: chat ID
         :param status: True to add, False to remove
         """
-        chats = self.data.setdefault('enabled_chats', [])
+        chats = self.data.setdefault(ENABLED_CHATS, [])
         chat_id = str(chat_id)
         if status and chat_id not in chats:
             # Add chat

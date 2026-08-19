@@ -38,6 +38,7 @@ ENABLED_CHATS = 'enabled_chats'
 ENABLED_COMMANDS = 'enabled_commands'
 EVERYONE = 'everyone'
 
+COMMAND_ACCESS_LISTS = 'access_lists'
 COMMAND_STATUS = 'status'
 
 
@@ -300,7 +301,8 @@ class Settings:
         command_settings = commands_settings.get(trigger, {})
         return {
             COMMAND_STATUS: command_settings.get(COMMAND_STATUS, True),
-            'access_lists': command_settings.get('access_lists', []),
+            COMMAND_ACCESS_LISTS: command_settings.get(COMMAND_ACCESS_LISTS,
+                                                       []),
             'scope': command_settings.get('scope',
                                           ['private', 'group', 'supergroup']),
         }
@@ -344,7 +346,7 @@ class Settings:
             result = False
         else:
             # Check command access lists
-            for access in command_settings['access_lists']:
+            for access in command_settings[COMMAND_ACCESS_LISTS]:
                 if access == EVERYONE:
                     # Access level everyone is always allowed
                     result = True
@@ -468,9 +470,9 @@ class Settings:
         commands_settings = self.data.setdefault(ENABLED_COMMANDS, {})
         command = commands_settings.setdefault(trigger, {})
         command[COMMAND_STATUS] = status
-        command.setdefault('access_lists', [])
+        command.setdefault(COMMAND_ACCESS_LISTS, [])
         if access_lists is not None:
-            command['access_lists'] = access_lists
+            command[COMMAND_ACCESS_LISTS] = access_lists
         command.setdefault('scope', ['private', 'group', 'supergroup'])
         if scope is not None:
             command['scope'] = scope

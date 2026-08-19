@@ -42,6 +42,11 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_bot_owners,
                              include_in_list=False,
                              sequence=801),
+            self.new_command(trigger='admin_set_bot_admins',
+                             description='Set bot admins',
+                             callback=self.do_command_admin_set_bot_admins,
+                             include_in_list=False,
+                             sequence=802),
         )
 
     @BasePlugin.call_command
@@ -84,6 +89,39 @@ class PluginAdmin(BasePlugin):
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from bot owners')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_bot_admins(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 2:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} add <@username|user_id>\n'
+                      f'/{command.trigger} remove <@username|user_id>'
+                      ))
+        else:
+            action = args[0]
+            value = args[1]
+            if action == 'add':
+                self.bot.settings.add_global_user(group_name='bot_admins',
+                                                  user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} added to bot admins')
+            elif action == 'remove':
+                self.bot.settings.remove_global_user(group_name='bot_admins',
+                                                     user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} removed from bot admins')
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')

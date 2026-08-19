@@ -30,6 +30,7 @@ from ..settings import (BOT_ADMINS,
                         COMMAND_SCOPE,
                         COMMAND_STATUS,
                         DENIED_USERS,
+                        ENABLED_CHATS,
                         ENABLED_COMMANDS)
 
 
@@ -76,11 +77,16 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_denied_users,
                              include_in_list=False,
                              sequence=841),
+            self.new_command(trigger='admin_list_chats',
+                             description='List enabled chats',
+                             callback=self.do_command_admin_list_chats,
+                             include_in_list=False,
+                             sequence=850),
             self.new_command(trigger='admin_set_chats',
                              description='Set enabled chats',
                              callback=self.do_command_admin_set_chats,
                              include_in_list=False,
-                             sequence=850),
+                             sequence=851),
             self.new_command(trigger='admin_list_commands',
                              description='List commands',
                              callback=self.do_command_admin_list_commands,
@@ -244,6 +250,20 @@ class PluginAdmin(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_chats(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        chats_list = '\n'.join(
+            sorted(self.bot.settings.data.get(ENABLED_CHATS)))
+        await update.effective_message.reply_text(
+            text=('Enabled chats:\n'
+                  '\n'
+                  f'{chats_list or 'None'}'))
 
     @BasePlugin.call_command
     async def do_command_admin_set_chats(

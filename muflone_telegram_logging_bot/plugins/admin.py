@@ -20,6 +20,8 @@
 
 import telegram.ext
 
+import prettytable
+
 from .base import BasePlugin
 from ..command import Command
 
@@ -57,11 +59,16 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_chats,
                              include_in_list=False,
                              sequence=804),
+            self.new_command(trigger='admin_list_commands',
+                             description='List commands',
+                             callback=self.do_command_admin_list_commands,
+                             include_in_list=False,
+                             sequence=805),
             self.new_command(trigger='admin_set_commands',
                              description='Set enabled commands',
                              callback=self.do_command_admin_set_commands,
                              include_in_list=False,
-                             sequence=805),
+                             sequence=806),
         )
 
     @BasePlugin.call_command
@@ -208,6 +215,36 @@ class PluginAdmin(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_commands(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        # Prepare table for results
+        table = prettytable.PrettyTable()
+        table.field_names = ('Command',
+                             'Description',
+                             'Status',
+                             'Access lists',
+                             'Scope')
+        table.align = 'l'
+        table.align['Status'] = 'c'
+        # Load commands settings
+        commands_settings = self.bot.settings.data.get('enabled_commands', {})
+        for item in self.bot.commands.values():
+            command_settings = commands_settings.get(item.trigger, {})
+            table.add_row(row=[
+                item.trigger,
+                item.description,
+                command_settings.get('status', False) and '✅' or '❌',
+                ','.join(command_settings.get('access_lists', [])),
+                ','.join(command_settings.get('scope', [])),
+            ])
+        await update.effective_message.reply_html(
+            text=f'<pre>{table.get_string()}</pre>')
 
     @BasePlugin.call_command
     async def do_command_admin_set_commands(

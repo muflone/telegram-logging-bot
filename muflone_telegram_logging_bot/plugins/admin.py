@@ -226,7 +226,6 @@ class PluginAdmin(BasePlugin):
         # Prepare table for results
         table = prettytable.PrettyTable()
         table.field_names = ('Command',
-                             'Description',
                              'Status',
                              'Access lists',
                              'Scope')
@@ -238,7 +237,6 @@ class PluginAdmin(BasePlugin):
             command_settings = commands_settings.get(item.trigger, {})
             table.add_row(row=[
                 item.trigger,
-                item.description,
                 command_settings.get('status', False) and '✅' or '❌',
                 ','.join(command_settings.get('access_lists', [])),
                 ','.join(command_settings.get('scope', [])),

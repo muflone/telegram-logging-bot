@@ -24,6 +24,7 @@ import prettytable
 
 from .base import BasePlugin
 from ..command import Command
+from ..settings import BOT_OWNERS
 
 
 class PluginAdmin(BasePlugin):
@@ -100,7 +101,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.data.get('bot_owners')))
+            sorted(self.bot.settings.data.get(BOT_OWNERS)))
         await update.effective_message.reply_text(
             text=('Bot owners:\n'
                   '\n'
@@ -126,12 +127,12 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if action == 'add':
-                self.bot.settings.add_global_user(group_name='bot_owners',
+                self.bot.settings.add_global_user(group_name=BOT_OWNERS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} added to bot owners')
             elif action == 'remove':
-                self.bot.settings.remove_global_user(group_name='bot_owners',
+                self.bot.settings.remove_global_user(group_name=BOT_OWNERS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from bot owners')

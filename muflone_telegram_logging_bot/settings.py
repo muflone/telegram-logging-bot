@@ -31,10 +31,12 @@ if TYPE_CHECKING:
 
     from .command import Command
 
+BOT_OWNERS = 'bot_owners'
+
 
 class Settings:
     STANDARD_ACCESS_LISTS = {
-        'bot_owners',
+        BOT_OWNERS,
         'bot_admins',
         'everyone',
     }
@@ -52,7 +54,7 @@ class Settings:
         Standard empty default settings
         """
         return {
-            'bot_owners': [],
+            BOT_OWNERS: [],
             'bot_admins': [],
             'denied_users': [],
             'enabled_chats': [],
@@ -84,8 +86,8 @@ class Settings:
             for key, value in self.get_empty_default_data().items():
                 self.data.setdefault(key, value)
         # Add bot_owner from environment if not present
-        if not self.data['bot_owners'] and os.environ.get('BOT_OWNER'):
-            self.add_global_user(group_name='bot_owners',
+        if not self.data[BOT_OWNERS] and os.environ.get('BOT_OWNER'):
+            self.add_global_user(group_name=BOT_OWNERS,
                                  user_reference=os.environ['BOT_OWNER'])
 
     def save(self) -> None:
@@ -183,7 +185,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.data.get('bot_owners', []))
+            users_list=self.data.get(BOT_OWNERS, []))
 
     def is_bot_admin(self,
                      user: Optional[telegram.User]
@@ -340,7 +342,7 @@ class Settings:
                     # Access level everyone is always allowed
                     result = True
                     break
-                elif access == 'bot_owners':
+                elif access == BOT_OWNERS:
                     # Commands requiring bot_owner access are unchecked
                     # as is_bot_owner was previously checked
                     pass

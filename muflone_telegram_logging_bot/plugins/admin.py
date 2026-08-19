@@ -52,6 +52,16 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_excluded,
                              include_in_list=False,
                              sequence=803),
+            self.new_command(trigger='admin_set_chats',
+                             description='Set enabled chats',
+                             callback=self.do_command_admin_set_chats,
+                             include_in_list=False,
+                             sequence=804),
+            self.new_command(trigger='admin_set_commands',
+                             description='Set enabled commands',
+                             callback=self.do_command_admin_set_commands,
+                             include_in_list=False,
+                             sequence=805),
         )
 
     @BasePlugin.call_command
@@ -160,6 +170,78 @@ class PluginAdmin(BasePlugin):
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from excluded users')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_chats(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 2:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} add <chat_id|this>\n'
+                      f'/{command.trigger} remove <chat_id|this>'
+                      ))
+        else:
+            action = args[0]
+            value = args[1]
+            if value == 'this':
+                value = update.effective_chat.id
+            if action == 'add':
+                self.bot.settings.set_chat_enabled(chat_id=value,
+                                                   status=True)
+                await update.effective_message.reply_text(
+                    text=f'Chat {value} has been enabled')
+            elif action == 'remove':
+                self.bot.settings.set_chat_enabled(chat_id=value,
+                                                   status=False)
+                await update.effective_message.reply_text(
+                    text=f'Chat {value} has been disabled')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_commands(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 2:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} enable <command> [access] [scope]\n'
+                      f'/{command.trigger} disable <command>'
+                      ))
+        else:
+            action = args[0]
+            value = args[1]
+            if action == 'enable':
+                access_lists = None if len(args) < 3 else args[2].split(',')
+                scope = None if len(args) < 4 else args[3].split(',')
+                self.bot.settings.set_command_status(trigger=value,
+                                                     status=True,
+                                                     access_lists=access_lists,
+                                                     scope=scope)
+                await update.effective_message.reply_text(
+                    text=f'Command {value} has been enabled')
+            elif action == 'disable':
+                self.bot.settings.set_command_status(trigger=value,
+                                                     status=False)
+                await update.effective_message.reply_text(
+                    text=f'Command {value} has been disabled')
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')

@@ -140,8 +140,8 @@ class Settings:
         else:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
-            result.setdefault(DENIED_USERS, [])
             result.setdefault(CHAT_ADMINS, [])
+            result.setdefault(DENIED_USERS, [])
         return result
 
     def save_chat(self,

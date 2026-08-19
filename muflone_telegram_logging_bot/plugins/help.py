@@ -51,7 +51,9 @@ class PluginHelp(BasePlugin):
                          ) -> None:
         commands_description = []
         for item in self.bot.commands.values():
-            if item.trigger and item.description:
+            # Include only commands available to be run
+            if (item.trigger and item.description and
+                    self.bot.settings.can_run_command(update, item)):
                 commands_description.append(
                     f'/{item.trigger}\n'
                     f'{item.description}\n')

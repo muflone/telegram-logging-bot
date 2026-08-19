@@ -25,6 +25,7 @@ import telegram.ext
 
 from .databases import Databases
 from .plugins.base import BasePlugin
+from .settings import Settings
 
 if TYPE_CHECKING:
     import pathlib
@@ -39,6 +40,9 @@ class Bot:
         self.telegram_token = token
         self.plugins = None
         self.databases = Databases(filepath=data_dir)
+        self.settings = Settings(
+            filepath=data_dir / 'settings.json',
+            chats_dir=data_dir / 'chats')
         self.commands = {}
         self.background_tasks = []
         self.next_handler_group = 1

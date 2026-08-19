@@ -107,8 +107,9 @@ class BasePlugin(object):
             app.add_handler(
                 handler=telegram.ext.CommandHandler(
                     command=command.trigger,
-                    callback=functools.partial(command.callback,
-                                               command=command)),
+                    callback=functools.partial(
+                        self.bot.settings.run_command,
+                        command=command)),
                 group=self.bot.next_handler_group)
         self.bot.next_handler_group += 1
 

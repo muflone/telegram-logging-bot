@@ -93,5 +93,7 @@ class PluginDetails(BasePlugin):
                   f'Status: {chat_member.status}\n'
                   f'Bot: {user.is_bot}\n'
                   f'Premium: {user.is_premium}\n'
+                  f'Bot Owner: {self.bot.settings.is_bot_owner(user=user)}\n'
+                  f'Bot Admin: {self.bot.settings.is_bot_admin(user=user)}\n'
                   f'Bio: {user_details.bio or ''}'),
             disable_web_page_preview=True)

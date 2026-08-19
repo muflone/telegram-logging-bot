@@ -42,7 +42,7 @@ class PluginVersion(BasePlugin):
                              description='Get the bot version',
                              callback=self.do_command,
                              include_in_list=True,
-                             sequence=30),
+                             sequence=40),
         )
 
     @BasePlugin.call_command

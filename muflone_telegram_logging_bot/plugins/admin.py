@@ -24,7 +24,7 @@ import prettytable
 
 from .base import BasePlugin
 from ..command import Command
-from ..settings import BOT_ADMINS, BOT_OWNERS, DENIED_USERS
+from ..settings import BOT_ADMINS, BOT_OWNERS, DENIED_USERS, ENABLED_COMMANDS
 
 
 class PluginAdmin(BasePlugin):
@@ -271,7 +271,7 @@ class PluginAdmin(BasePlugin):
         table.align = 'l'
         table.align['Status'] = 'c'
         # Load commands settings
-        commands_settings = self.bot.settings.data.get('enabled_commands', {})
+        commands_settings = self.bot.settings.data.get(ENABLED_COMMANDS, {})
         for item in sorted(self.bot.commands.values(),
                            key=lambda item: item.trigger):
             command_settings = commands_settings.get(item.trigger, {})

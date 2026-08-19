@@ -35,6 +35,7 @@ BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
 DENIED_USERS = 'denied_users'
 ENABLED_CHATS = 'enabled_chats'
+ENABLED_COMMANDS = 'enabled_commands'
 EVERYONE = 'everyone'
 
 
@@ -62,7 +63,7 @@ class Settings:
             BOT_ADMINS: [],
             DENIED_USERS: [],
             ENABLED_CHATS: [],
-            'enabled_commands': {},
+            ENABLED_COMMANDS: {},
         }
 
     def normalize_user_ref(self, value: str | int) -> str:
@@ -293,7 +294,7 @@ class Settings:
         :param trigger: command trigger
         :return: command details
         """
-        commands_settings = self.data.get('enabled_commands', {})
+        commands_settings = self.data.get(ENABLED_COMMANDS, {})
         command_settings = commands_settings.get(trigger, {})
         return {
             'status': command_settings.get('status', True),
@@ -462,7 +463,7 @@ class Settings:
         :param scope: scope of enabled chats
         :return:
         """
-        commands_settings = self.data.setdefault('enabled_commands', {})
+        commands_settings = self.data.setdefault(ENABLED_COMMANDS, {})
         command = commands_settings.setdefault(trigger, {})
         command['status'] = status
         command.setdefault('access_lists', [])

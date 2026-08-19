@@ -33,13 +33,14 @@ if TYPE_CHECKING:
 
 BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
+EVERYONE = 'everyone'
 
 
 class Settings:
     STANDARD_ACCESS_LISTS = {
         BOT_OWNERS,
         BOT_ADMINS,
-        'everyone',
+        EVERYONE,
     }
 
     def __init__(self,
@@ -339,7 +340,7 @@ class Settings:
         else:
             # Check command access lists
             for access in command_settings['access_lists']:
-                if access == 'everyone':
+                if access == EVERYONE:
                     # Access level everyone is always allowed
                     result = True
                     break

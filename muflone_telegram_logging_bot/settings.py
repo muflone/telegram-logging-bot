@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 
 BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
+CHAT_ADMINS = 'chat_admins'
 DENIED_USERS = 'denied_users'
 ENABLED_CHATS = 'enabled_chats'
 ENABLED_COMMANDS = 'enabled_commands'
@@ -140,7 +141,7 @@ class Settings:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
             result.setdefault(DENIED_USERS, [])
-            result.setdefault('chat_admin', [])
+            result.setdefault(CHAT_ADMINS, [])
         return result
 
     def save_chat(self,
@@ -281,7 +282,7 @@ class Settings:
                       user: Optional[telegram.User]
                       ) -> bool:
         """
-        Check if the user is in the bot_admin or in the chat_admin chat group
+        Check if the user is in the bot_admin or in the chat_admins chat group
 
         :param chat_id: chat ID
         :param user: user details
@@ -290,7 +291,7 @@ class Settings:
         return (self.is_bot_admin(user=user) or
                 self.is_in_chat_group(chat_id=chat_id,
                                       user=user,
-                                      group='chat_admin'))
+                                      group=CHAT_ADMINS))
 
     def get_command_settings(self,
                              trigger: str

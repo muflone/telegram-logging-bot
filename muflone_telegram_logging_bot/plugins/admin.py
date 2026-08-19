@@ -66,9 +66,9 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_bot_admins,
                              include_in_list=False,
                              sequence=831),
-            self.new_command(trigger='admin_set_excluded',
-                             description='Set excluded users',
-                             callback=self.do_command_admin_set_excluded,
+            self.new_command(trigger='admin_set_denied_users',
+                             description='Set denied users',
+                             callback=self.do_command_admin_set_denied_users,
                              include_in_list=False,
                              sequence=840),
             self.new_command(trigger='admin_set_chats',
@@ -194,7 +194,7 @@ class PluginAdmin(BasePlugin):
                     text='Invalid action')
 
     @BasePlugin.call_command
-    async def do_command_admin_set_excluded(
+    async def do_command_admin_set_denied_users(
             self,
             update: telegram.Update,
             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
@@ -216,12 +216,12 @@ class PluginAdmin(BasePlugin):
                 self.bot.settings.add_global_user(group_name=DENIED_USERS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
-                    text=f'User {value} added to excluded users')
+                    text=f'User {value} added to denied users')
             elif action == 'remove':
                 self.bot.settings.remove_global_user(group_name=DENIED_USERS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
-                    text=f'User {value} removed from excluded users')
+                    text=f'User {value} removed from denied users')
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')

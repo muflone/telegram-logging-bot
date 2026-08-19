@@ -139,9 +139,8 @@ class Settings:
         else:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
-            result.setdefault('groups', {})
-            result['groups'].setdefault(DENIED_USERS, [])
-            result['groups'].setdefault('chat_admin', [])
+            result.setdefault(DENIED_USERS, [])
+            result.setdefault('chat_admin', [])
         return result
 
     def save_chat(self,
@@ -260,7 +259,7 @@ class Settings:
         chat_settings = self.load_chat(chat_id=chat_id)
         return self.user_in_list(
             user=user,
-            users_list=chat_settings.get('groups', {}).get(group, []))
+            users_list=chat_settings.get(group, []))
 
     def is_chat_denied_users(self,
                              chat_id: int | str,

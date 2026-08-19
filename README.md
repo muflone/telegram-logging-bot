@@ -22,6 +22,7 @@ It currently includes some minimal commands you can access using /start
 * Python DateUtil 2.9.x ( https://pypi.org/project/python-dateutil/ )
 * Python Telegram Bot 22.x ( https://pypi.org/project/python-telegram-bot/ )
 * Python Imaging Library pillow 12.x ( https://pypi.org/project/pillow/ )
+* PrettyTable ( https://pypi.org/project/prettytable/ )
 
 # Usage
 

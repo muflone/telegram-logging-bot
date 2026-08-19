@@ -39,11 +39,16 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_reload,
                              include_in_list=False,
                              sequence=810),
+            self.new_command(trigger='admin_list_bot_owners',
+                             description='List bot owners',
+                             callback=self.do_command_admin_list_bot_owners,
+                             include_in_list=False,
+                             sequence=820),
             self.new_command(trigger='admin_set_bot_owners',
                              description='Set bot owners',
                              callback=self.do_command_admin_set_bot_owners,
                              include_in_list=False,
-                             sequence=820),
+                             sequence=821),
             self.new_command(trigger='admin_set_bot_admins',
                              description='Set bot admins',
                              callback=self.do_command_admin_set_bot_admins,
@@ -81,6 +86,19 @@ class PluginAdmin(BasePlugin):
         self.bot.settings.load()
         await update.effective_message.reply_text(
             text='Global settings reloaded')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_bot_owners(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        users_list = '\n'.join(self.bot.settings.data.get('bot_owners'))
+        await update.effective_message.reply_text(
+            text=('Bot owners:\n'
+                  '\n'
+                  f'{users_list or 'None'}'))
 
     @BasePlugin.call_command
     async def do_command_admin_set_bot_owners(

@@ -27,6 +27,7 @@ from ..command import Command
 from ..settings import (BOT_ADMINS,
                         BOT_OWNERS,
                         COMMAND_ACCESS_LISTS,
+                        COMMAND_SCOPE,
                         COMMAND_STATUS,
                         DENIED_USERS,
                         ENABLED_COMMANDS)
@@ -284,7 +285,7 @@ class PluginAdmin(BasePlugin):
                 item.trigger,
                 command_settings.get(COMMAND_STATUS, False) and '✅' or '❌',
                 ','.join(command_settings.get(COMMAND_ACCESS_LISTS, [])),
-                ','.join(command_settings.get('scope', [])),
+                ','.join(command_settings.get(COMMAND_SCOPE, [])),
             ])
         await update.effective_message.reply_html(
             text=f'<pre>{table.get_string()}</pre>')

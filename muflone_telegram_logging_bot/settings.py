@@ -39,6 +39,7 @@ ENABLED_COMMANDS = 'enabled_commands'
 EVERYONE = 'everyone'
 
 COMMAND_ACCESS_LISTS = 'access_lists'
+COMMAND_SCOPE = 'scope'
 COMMAND_STATUS = 'status'
 
 
@@ -303,8 +304,10 @@ class Settings:
             COMMAND_STATUS: command_settings.get(COMMAND_STATUS, True),
             COMMAND_ACCESS_LISTS: command_settings.get(COMMAND_ACCESS_LISTS,
                                                        []),
-            'scope': command_settings.get('scope',
-                                          ['private', 'group', 'supergroup']),
+            COMMAND_SCOPE: command_settings.get(COMMAND_SCOPE,
+                                                ['private',
+                                                 'group',
+                                                 'supergroup']),
         }
 
     def can_run_command(self,
@@ -341,7 +344,7 @@ class Settings:
         elif not command_settings[COMMAND_STATUS]:
             # Commands disabled are always denied
             result = False
-        elif chat.type not in command_settings['scope']:
+        elif chat.type not in command_settings[COMMAND_SCOPE]:
             # Commands for a different chat type are always denied
             result = False
         else:
@@ -473,7 +476,7 @@ class Settings:
         command.setdefault(COMMAND_ACCESS_LISTS, [])
         if access_lists is not None:
             command[COMMAND_ACCESS_LISTS] = access_lists
-        command.setdefault('scope', ['private', 'group', 'supergroup'])
+        command.setdefault(COMMAND_SCOPE, ['private', 'group', 'supergroup'])
         if scope is not None:
-            command['scope'] = scope
+            command[COMMAND_SCOPE] = scope
         self.save()

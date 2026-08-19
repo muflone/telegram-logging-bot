@@ -24,7 +24,11 @@ import prettytable
 
 from .base import BasePlugin
 from ..command import Command
-from ..settings import BOT_ADMINS, BOT_OWNERS, DENIED_USERS, ENABLED_COMMANDS
+from ..settings import (BOT_ADMINS,
+                        BOT_OWNERS,
+                        COMMAND_STATUS,
+                        DENIED_USERS,
+                        ENABLED_COMMANDS)
 
 
 class PluginAdmin(BasePlugin):
@@ -277,7 +281,7 @@ class PluginAdmin(BasePlugin):
             command_settings = commands_settings.get(item.trigger, {})
             table.add_row(row=[
                 item.trigger,
-                command_settings.get('status', False) and '✅' or '❌',
+                command_settings.get(COMMAND_STATUS, False) and '✅' or '❌',
                 ','.join(command_settings.get('access_lists', [])),
                 ','.join(command_settings.get('scope', [])),
             ])

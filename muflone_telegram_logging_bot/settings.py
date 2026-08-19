@@ -38,6 +38,8 @@ ENABLED_CHATS = 'enabled_chats'
 ENABLED_COMMANDS = 'enabled_commands'
 EVERYONE = 'everyone'
 
+COMMAND_STATUS = 'status'
+
 
 class Settings:
     STANDARD_ACCESS_LISTS = {
@@ -297,7 +299,7 @@ class Settings:
         commands_settings = self.data.get(ENABLED_COMMANDS, {})
         command_settings = commands_settings.get(trigger, {})
         return {
-            'status': command_settings.get('status', True),
+            COMMAND_STATUS: command_settings.get(COMMAND_STATUS, True),
             'access_lists': command_settings.get('access_lists', []),
             'scope': command_settings.get('scope',
                                           ['private', 'group', 'supergroup']),
@@ -334,7 +336,7 @@ class Settings:
         elif not self.is_chat_enabled(chat=chat):
             # Chats not enabled are always denied
             result = False
-        elif not command_settings['status']:
+        elif not command_settings[COMMAND_STATUS]:
             # Commands disabled are always denied
             result = False
         elif chat.type not in command_settings['scope']:
@@ -465,7 +467,7 @@ class Settings:
         """
         commands_settings = self.data.setdefault(ENABLED_COMMANDS, {})
         command = commands_settings.setdefault(trigger, {})
-        command['status'] = status
+        command[COMMAND_STATUS] = status
         command.setdefault('access_lists', [])
         if access_lists is not None:
             command['access_lists'] = access_lists

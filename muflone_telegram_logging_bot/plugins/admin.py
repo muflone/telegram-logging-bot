@@ -99,7 +99,8 @@ class PluginAdmin(BasePlugin):
             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
             command: Command,
     ) -> None:
-        users_list = '\n'.join(self.bot.settings.data.get('bot_owners'))
+        users_list = '\n'.join(
+            sorted(self.bot.settings.data.get('bot_owners')))
         await update.effective_message.reply_text(
             text=('Bot owners:\n'
                   '\n'
@@ -145,7 +146,8 @@ class PluginAdmin(BasePlugin):
             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
             command: Command,
     ) -> None:
-        users_list = '\n'.join(self.bot.settings.data.get('bot_admins'))
+        users_list = '\n'.join(
+            sorted(self.bot.settings.data.get('bot_admins')))
         await update.effective_message.reply_text(
             text=('Bot admins:\n'
                   '\n'
@@ -269,7 +271,8 @@ class PluginAdmin(BasePlugin):
         table.align['Status'] = 'c'
         # Load commands settings
         commands_settings = self.bot.settings.data.get('enabled_commands', {})
-        for item in self.bot.commands.values():
+        for item in sorted(self.bot.commands.values(),
+                           key=lambda item: item.trigger):
             command_settings = commands_settings.get(item.trigger, {})
             table.add_row(row=[
                 item.trigger,

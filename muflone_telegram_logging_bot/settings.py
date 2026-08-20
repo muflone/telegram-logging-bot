@@ -118,7 +118,7 @@ class Settings:
         """
         filepath = self.get_chat_filepath(chat_id=chat_id)
         if not filepath.exists():
-            result = self._get_default_global_data()
+            result = self._get_default_chat_data()
         else:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
@@ -532,6 +532,15 @@ class Settings:
             DENIED_USERS: [],
             ENABLED_CHATS: [],
             ENABLED_COMMANDS: {},
+        }
+
+    def _get_default_chat_data(self) -> dict[str, Any]:
+        """
+        Standard empty default chat settings
+        """
+        return {
+            CHAT_ADMINS: [],
+            DENIED_USERS: [],
         }
 
     def _normalize_user_ref(self, value: str | int) -> str:

@@ -49,6 +49,11 @@ class PluginAdminChat(BasePlugin):
                              callback=self.do_command_admin_list_denied_users,
                              include_in_list=False,
                              sequence=920),
+            self.new_command(trigger='admin_chat_set_denied_users',
+                             description='Set denied users',
+                             callback=self.do_command_admin_set_denied_users,
+                             include_in_list=False,
+                             sequence=921),
         )
 
     @BasePlugin.call_command
@@ -120,3 +125,39 @@ class PluginAdminChat(BasePlugin):
             text=(f'Denied users for {chat.id}:\n'
                   '\n'
                   f'{users_list or 'None'}'))
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_denied_users(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 2:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} add <@username|user_id>\n'
+                      f'/{command.trigger} remove <@username|user_id>'
+                      ))
+        else:
+            action = args[0]
+            value = args[1]
+            chat = update.effective_chat
+            if action == 'add':
+                self.bot.settings.add_chat_user(chat_id=str(chat.id),
+                                                access_list=DENIED_USERS,
+                                                user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} added to denied users')
+            elif action == 'remove':
+                self.bot.settings.remove_chat_user(chat_id=str(chat.id),
+                                                   access_list=DENIED_USERS,
+                                                   user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} removed from denied users')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')

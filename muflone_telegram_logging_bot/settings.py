@@ -65,52 +65,27 @@ class Settings:
         self.chats_data = {}
         self.load()
 
-    def get_empty_default_data(self) -> dict[str, Any]:
-        """
-        Standard empty default settings
-        """
-        return {
-            BOT_OWNERS: [],
-            BOT_ADMINS: [],
-            DENIED_USERS: [],
-            ENABLED_CHATS: [],
-            ENABLED_COMMANDS: {},
-        }
-
-    def normalize_user_ref(self, value: str | int) -> str:
-        """
-        Clear user name or id
-
-        :param value: user name or id
-        :return: lowercase user name or id as string
-        """
-        value = str(value).strip()
-        if value.startswith('@'):
-            return f'@{value[1:].lower()}'
-        return value
-
     def load(self) -> None:
         """
         Load settings from file
         """
         if not self.filepath.exists():
-            self.global_data = self.get_empty_default_data()
+            self.global_data = self._get_default_global_data()
             self.save()
         else:
             with self.filepath.open(encoding='utf-8') as handle:
                 self.global_data = json.load(handle)
-            for key, value in self.get_empty_default_data().items():
+            for key, value in self._get_default_global_data().items():
                 self.global_data.setdefault(key, value)
         # Add bot_owner from environment if not present
         if (not self.get_list_from_global_data(list_name=BOT_OWNERS) and
                 os.environ.get('BOT_OWNER')):
-            self.add_global_user(group_name=BOT_OWNERS,
+            self.add_global_user(access_list=BOT_OWNERS,
                                  user_reference=os.environ['BOT_OWNER'])
         # Load every chat settings
         for chat_path in self.chats_dir.glob('*'):
             if chat_path.is_dir():
-                self.chats_data[chat_path.name] = self.load_chat(
-                    chat_id=chat_path.name)
+                self.load_chat(chat_id=chat_path.name)
 
     def save(self) -> None:
         """
@@ -135,26 +110,24 @@ class Settings:
 
     def load_chat(self,
                   chat_id: str
-                  ) -> dict[str, Any]:
+                  ) -> None:
         """
         Load chat settings
 
         :param chat_id: chat id as string
-        :return: chat settings
         """
         filepath = self.get_chat_filepath(chat_id=chat_id)
         if not filepath.exists():
-            result = self.get_empty_default_data()
+            result = self._get_default_global_data()
         else:
             with filepath.open(encoding='utf-8') as handle:
                 result = json.load(handle)
             result.setdefault(CHAT_ADMINS, [])
             result.setdefault(DENIED_USERS, [])
-        return result
+        self.chats_data[chat_id] = result
 
     def save_chat(self,
                   chat_id: str,
-                  data: dict[str, Any]
                   ) -> None:
         """
         Load chat settings
@@ -165,7 +138,10 @@ class Settings:
         filepath = self.get_chat_filepath(chat_id=chat_id)
         tmp_filepath = filepath.with_suffix('.json.tmp')
         with tmp_filepath.open('w', encoding='utf-8') as handle:
-            json.dump(data, handle, indent=2, ensure_ascii=False)
+            json.dump(self.chats_data[chat_id],
+                      handle,
+                      indent=2,
+                      ensure_ascii=False)
             handle.write('\n')
         tmp_filepath.replace(filepath)
 
@@ -218,69 +194,13 @@ class Settings:
         else:
             user_refs = {str(user.id)}
             if user.username:
-                user_refs.add(self.normalize_user_ref(f'@{user.username}'))
+                user_refs.add(self._normalize_user_ref(f'@{user.username}'))
             normalized_values = {
-                self.normalize_user_ref(value)
+                self._normalize_user_ref(value)
                 for value in users_list
             }
             # Find matching users
             result = bool(user_refs & normalized_values)
-        return result
-
-    def is_bot_owner(self,
-                     user: Optional[telegram.User]
-                     ) -> bool:
-        """
-        Check if the user is in the bot_owners list
-
-        :param user: user details
-        :return: True if the user is in the bot_owners list
-        """
-        return self.is_in_global_list(user=user,
-                                      access_list=BOT_OWNERS)
-
-    def is_bot_admin(self,
-                     user: Optional[telegram.User]
-                     ) -> bool:
-        """
-        Check if the user is in the bot_owners or bot_admins lists
-
-        :param user: user details
-        :return: True if the user is in the bot_owners or bot_admins list
-        """
-        return (self.is_bot_owner(user=user) or
-                self.is_in_global_list(user=user,
-                                       access_list=BOT_ADMINS))
-
-    def is_global_denied_users(self,
-                               user: Optional[telegram.User]
-                               ) -> bool:
-        """
-        Check if the user is in the global denied_users lists
-
-        :param user: user details
-        :return: True if the user is in the denied_users list
-        """
-        return self.is_in_global_list(user=user,
-                                      access_list=DENIED_USERS)
-
-    def is_chat_enabled(self,
-                        chat: Optional[telegram.Chat]
-                        ) -> bool:
-        """
-        Check if the chat is in the enabled_chats group
-
-        :param chat: chat details
-        :return: True if the chat is included in the enabled_chats group
-        """
-        if not chat:
-            result = False
-        else:
-            result = str(chat.id) in {
-                chat_id
-                for chat_id in self.get_list_from_global_data(
-                    list_name=ENABLED_CHATS)
-            }
         return result
 
     def is_in_chat_list(self,
@@ -321,20 +241,61 @@ class Settings:
             users_list=self.get_list_from_global_data(list_name=access_list))
         return result
 
-    def is_chat_denied_users(self,
-                             chat_id: str,
-                             user: Optional[telegram.User]
-                             ) -> bool:
+    def is_bot_owner(self,
+                     user: Optional[telegram.User]
+                     ) -> bool:
         """
-        Check if the user is in the denied_users chat group
+        Check if the user is in the bot_owners list
 
-        :param chat_id: chat id as string
         :param user: user details
-        :return: True if the user is in the denied_users chat group
+        :return: True if the user is in the bot_owners list
         """
-        return self.is_in_chat_list(chat_id=chat_id,
-                                    user=user,
-                                    access_list=DENIED_USERS)
+        return self.is_in_global_list(user=user,
+                                      access_list=BOT_OWNERS)
+
+    def is_bot_admin(self,
+                     user: Optional[telegram.User]
+                     ) -> bool:
+        """
+        Check if the user is in the bot_owners or bot_admins lists
+
+        :param user: user details
+        :return: True if the user is in the bot_owners or bot_admins list
+        """
+        return (self.is_bot_owner(user=user) or
+                self.is_in_global_list(user=user,
+                                       access_list=BOT_ADMINS))
+
+    def is_chat_enabled(self,
+                        chat: Optional[telegram.Chat]
+                        ) -> bool:
+        """
+        Check if the chat is in the enabled_chats group
+
+        :param chat: chat details
+        :return: True if the chat is included in the enabled_chats group
+        """
+        if not chat:
+            result = False
+        else:
+            result = str(chat.id) in {
+                chat_id
+                for chat_id in self.get_list_from_global_data(
+                    list_name=ENABLED_CHATS)
+            }
+        return result
+
+    def is_global_denied_users(self,
+                               user: Optional[telegram.User]
+                               ) -> bool:
+        """
+        Check if the user is in the global denied_users lists
+
+        :param user: user details
+        :return: True if the user is in the denied_users list
+        """
+        return self.is_in_global_list(user=user,
+                                      access_list=DENIED_USERS)
 
     def is_chat_admin(self,
                       chat_id: str,
@@ -351,6 +312,21 @@ class Settings:
                 self.is_in_chat_list(chat_id=chat_id,
                                      user=user,
                                      access_list=CHAT_ADMINS))
+
+    def is_chat_denied_users(self,
+                             chat_id: str,
+                             user: Optional[telegram.User]
+                             ) -> bool:
+        """
+        Check if the user is in the denied_users chat group
+
+        :param chat_id: chat id as string
+        :param user: user details
+        :return: True if the user is in the denied_users chat group
+        """
+        return self.is_in_chat_list(chat_id=chat_id,
+                                    user=user,
+                                    access_list=DENIED_USERS)
 
     def get_command_settings(self,
                              trigger: str
@@ -468,33 +444,33 @@ class Settings:
                                    command=command)
 
     def add_global_user(self,
-                        group_name: str,
+                        access_list: str,
                         user_reference: str
                         ) -> None:
         """
-        Add the specified user_reference to the global group_name
+        Add the specified user_reference to the global access_list
 
-        :param group_name: name of the group to add the user
+        :param access_list: name of the group to add the user
         :param user_reference: user id or username to add
         """
-        users = self.global_data.setdefault(group_name, [])
-        user_reference = self.normalize_user_ref(value=user_reference)
+        users = self.global_data.setdefault(access_list, [])
+        user_reference = self._normalize_user_ref(value=user_reference)
         if user_reference not in users:
             users.append(user_reference)
             self.save()
 
     def remove_global_user(self,
-                           group_name: str,
+                           access_list: str,
                            user_reference: str
                            ) -> None:
         """
-        Remove the specified user_reference from the global group_name
+        Remove the specified user_reference from the global access_list
 
-        :param group_name: name of the group to remove the user
+        :param access_list: name of the group to remove the user
         :param user_reference: user id or username to remove
         """
-        users = self.global_data.setdefault(group_name, [])
-        user_reference = self.normalize_user_ref(value=user_reference)
+        users = self.global_data.setdefault(access_list, [])
+        user_reference = self._normalize_user_ref(value=user_reference)
         if user_reference in users:
             users.remove(user_reference)
             self.save()
@@ -545,3 +521,27 @@ class Settings:
         if scope is not None:
             command[COMMAND_SCOPE] = scope
         self.save()
+
+    def _get_default_global_data(self) -> dict[str, Any]:
+        """
+        Standard empty default global settings
+        """
+        return {
+            BOT_OWNERS: [],
+            BOT_ADMINS: [],
+            DENIED_USERS: [],
+            ENABLED_CHATS: [],
+            ENABLED_COMMANDS: {},
+        }
+
+    def _normalize_user_ref(self, value: str | int) -> str:
+        """
+        Clear user name or id
+
+        :param value: user name or id
+        :return: lowercase user name or id as string
+        """
+        value = str(value).strip()
+        if value.startswith('@'):
+            return f'@{value[1:].lower()}'
+        return value

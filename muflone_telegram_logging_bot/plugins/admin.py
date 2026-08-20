@@ -144,12 +144,12 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if action == 'add':
-                self.bot.settings.add_global_user(group_name=BOT_OWNERS,
+                self.bot.settings.add_global_user(access_list=BOT_OWNERS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} added to bot owners')
             elif action == 'remove':
-                self.bot.settings.remove_global_user(group_name=BOT_OWNERS,
+                self.bot.settings.remove_global_user(access_list=BOT_OWNERS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from bot owners')
@@ -192,12 +192,12 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if action == 'add':
-                self.bot.settings.add_global_user(group_name=BOT_ADMINS,
+                self.bot.settings.add_global_user(access_list=BOT_ADMINS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} added to bot admins')
             elif action == 'remove':
-                self.bot.settings.remove_global_user(group_name=BOT_ADMINS,
+                self.bot.settings.remove_global_user(access_list=BOT_ADMINS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from bot admins')
@@ -240,12 +240,12 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if action == 'add':
-                self.bot.settings.add_global_user(group_name=DENIED_USERS,
+                self.bot.settings.add_global_user(access_list=DENIED_USERS,
                                                   user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} added to denied users')
             elif action == 'remove':
-                self.bot.settings.remove_global_user(group_name=DENIED_USERS,
+                self.bot.settings.remove_global_user(access_list=DENIED_USERS,
                                                      user_reference=value)
                 await update.effective_message.reply_text(
                     text=f'User {value} removed from denied users')

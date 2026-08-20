@@ -72,6 +72,11 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_list_chat_admins,
                              include_in_list=False,
                              sequence=840),
+            self.new_command(trigger='admin_set_chat_admins',
+                             description='Set chat admins',
+                             callback=self.do_command_admin_set_chat_admins,
+                             include_in_list=False,
+                             sequence=841),
             self.new_command(trigger='admin_list_denied_users',
                              description='List denied users',
                              callback=self.do_command_admin_list_denied_users,
@@ -227,6 +232,42 @@ class PluginAdmin(BasePlugin):
             text=(f'Chat admins for {chat.id}:\n'
                   '\n'
                   f'{users_list or 'None'}'))
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_chat_admins(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 2:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} add <@username|user_id>\n'
+                      f'/{command.trigger} remove <@username|user_id>'
+                      ))
+        else:
+            action = args[0]
+            value = args[1]
+            chat = update.effective_chat
+            if action == 'add':
+                self.bot.settings.add_chat_user(chat_id=str(chat.id),
+                                                access_list=CHAT_ADMINS,
+                                                user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} added to chat admins')
+            elif action == 'remove':
+                self.bot.settings.remove_chat_user(chat_id=str(chat.id),
+                                                   access_list=CHAT_ADMINS,
+                                                   user_reference=value)
+                await update.effective_message.reply_text(
+                    text=f'User {value} removed from chat admins')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')
 
     @BasePlugin.call_command
     async def do_command_admin_list_denied_users(

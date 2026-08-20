@@ -236,9 +236,8 @@ class Settings:
         :param user: user details
         :return: True if the user is in the bot_owners list
         """
-        return self.user_in_list(
-            user=user,
-            users_list=self.get_list_from_global_data(list_name=BOT_OWNERS))
+        return self.is_in_global_list(user=user,
+                                      access_list=BOT_OWNERS)
 
     def is_bot_admin(self,
                      user: Optional[telegram.User]
@@ -250,10 +249,8 @@ class Settings:
         :return: True if the user is in the bot_owners or bot_admins list
         """
         return (self.is_bot_owner(user=user) or
-                self.user_in_list(
-                    user=user,
-                    users_list=self.get_list_from_global_data(
-                        list_name=BOT_ADMINS)))
+                self.is_in_global_list(user=user,
+                                       access_list=BOT_ADMINS))
 
     def is_global_denied_users(self,
                                user: Optional[telegram.User]
@@ -264,9 +261,8 @@ class Settings:
         :param user: user details
         :return: True if the user is in the denied_users list
         """
-        return self.user_in_list(
-            user=user,
-            users_list=self.get_list_from_global_data(list_name=DENIED_USERS))
+        return self.is_in_global_list(user=user,
+                                      access_list=DENIED_USERS)
 
     def is_chat_enabled(self,
                         chat: Optional[telegram.Chat]
@@ -307,6 +303,22 @@ class Settings:
                 user=user,
                 users_list=self.get_list_from_chat_data(chat_id=chat_id,
                                                         list_name=access_list))
+        return result
+
+    def is_in_global_list(self,
+                          user: Optional[telegram.User],
+                          access_list: str
+                          ) -> bool:
+        """
+        Check if the user is in the specified global list
+
+        :param user: user details
+        :param access_list: list to check
+        :return: True if the user is in the access list
+        """
+        result = self.user_in_list(
+            user=user,
+            users_list=self.get_list_from_global_data(list_name=access_list))
         return result
 
     def is_chat_denied_users(self,

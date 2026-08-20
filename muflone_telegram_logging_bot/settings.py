@@ -174,6 +174,14 @@ class Settings:
         """
         return copy.copy(self.global_data.get(list_name, []))
 
+    def get_enabled_commands(self) -> dict[str, Any]:
+        """
+        Return the enabled commands data
+
+        :return: dictionary with commands details
+        """
+        return copy.deepcopy(self.global_data.get(ENABLED_COMMANDS, {}))
+
     def user_in_list(self,
                      user: Optional[telegram.User],
                      users_list: list[str]
@@ -315,7 +323,7 @@ class Settings:
         :param trigger: command trigger
         :return: command details
         """
-        commands_settings = self.global_data.get(ENABLED_COMMANDS, {})
+        commands_settings = self.get_enabled_commands()
         command_settings = commands_settings.get(trigger, {})
         return {
             COMMAND_STATUS: command_settings.get(COMMAND_STATUS, True),
@@ -487,7 +495,7 @@ class Settings:
         :param scope: scope of enabled chats
         :return:
         """
-        commands_settings = self.global_data.setdefault(ENABLED_COMMANDS, {})
+        commands_settings = self.get_enabled_commands()
         command = commands_settings.setdefault(trigger, {})
         command[COMMAND_STATUS] = status
         command.setdefault(COMMAND_ACCESS_LISTS, [])

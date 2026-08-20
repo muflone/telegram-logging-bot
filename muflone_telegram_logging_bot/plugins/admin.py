@@ -30,8 +30,7 @@ from ..settings import (BOT_ADMINS,
                         COMMAND_SCOPE,
                         COMMAND_STATUS,
                         DENIED_USERS,
-                        ENABLED_CHATS,
-                        ENABLED_COMMANDS)
+                        ENABLED_CHATS)
 
 
 class PluginAdmin(BasePlugin):
@@ -316,7 +315,7 @@ class PluginAdmin(BasePlugin):
         table.align = 'l'
         table.align['Status'] = 'c'
         # Load commands settings
-        commands_settings = self.bot.settings.global_data.get(ENABLED_COMMANDS, {})
+        commands_settings = self.bot.settings.get_enabled_commands()
         for item in sorted(self.bot.commands.values(),
                            key=lambda item: item.trigger):
             command_settings = commands_settings.get(item.trigger, {})

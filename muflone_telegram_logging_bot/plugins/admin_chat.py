@@ -44,6 +44,11 @@ class PluginAdminChat(BasePlugin):
                              callback=self.do_command_admin_set_chat_admins,
                              include_in_list=False,
                              sequence=911),
+            self.new_command(trigger='admin_chat_list_denied_users',
+                             description='List denied users',
+                             callback=self.do_command_admin_list_denied_users,
+                             include_in_list=False,
+                             sequence=920),
         )
 
     @BasePlugin.call_command
@@ -98,3 +103,20 @@ class PluginAdminChat(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_denied_users(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        chat = update.effective_chat
+        users_list = '\n'.join(
+            sorted(self.bot.settings.get_list_from_chat_data(
+                chat_id=str(chat.id),
+                list_name=DENIED_USERS)))
+        await update.effective_message.reply_text(
+            text=(f'Denied users for {chat.id}:\n'
+                  '\n'
+                  f'{users_list or 'None'}'))

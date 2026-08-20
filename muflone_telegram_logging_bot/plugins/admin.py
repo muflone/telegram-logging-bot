@@ -118,7 +118,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.data.get(BOT_OWNERS)))
+            sorted(self.bot.settings.global_data.get(BOT_OWNERS)))
         await update.effective_message.reply_text(
             text=('Bot owners:\n'
                   '\n'
@@ -165,7 +165,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.data.get(BOT_ADMINS)))
+            sorted(self.bot.settings.global_data.get(BOT_ADMINS)))
         await update.effective_message.reply_text(
             text=('Bot admins:\n'
                   '\n'
@@ -212,7 +212,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.data.get(DENIED_USERS)))
+            sorted(self.bot.settings.global_data.get(DENIED_USERS)))
         await update.effective_message.reply_text(
             text=('Denied users:\n'
                   '\n'
@@ -259,7 +259,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         chats_list = '\n'.join(
-            sorted(self.bot.settings.data.get(ENABLED_CHATS)))
+            sorted(self.bot.settings.global_data.get(ENABLED_CHATS)))
         await update.effective_message.reply_text(
             text=('Enabled chats:\n'
                   '\n'
@@ -316,7 +316,7 @@ class PluginAdmin(BasePlugin):
         table.align = 'l'
         table.align['Status'] = 'c'
         # Load commands settings
-        commands_settings = self.bot.settings.data.get(ENABLED_COMMANDS, {})
+        commands_settings = self.bot.settings.global_data.get(ENABLED_COMMANDS, {})
         for item in sorted(self.bot.commands.values(),
                            key=lambda item: item.trigger):
             command_settings = commands_settings.get(item.trigger, {})

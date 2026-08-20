@@ -60,7 +60,7 @@ class Settings:
                  chats_dir: pathlib.Path):
         self.filepath = filepath
         self.chats_dir = chats_dir
-        self.data = {}
+        self.global_data = {}
         self.load()
 
     def get_empty_default_data(self) -> dict[str, Any]:
@@ -92,15 +92,15 @@ class Settings:
         Load settings from file
         """
         if not self.filepath.exists():
-            self.data = self.get_empty_default_data()
+            self.global_data = self.get_empty_default_data()
             self.save()
         else:
             with self.filepath.open(encoding='utf-8') as handle:
-                self.data = json.load(handle)
+                self.global_data = json.load(handle)
             for key, value in self.get_empty_default_data().items():
-                self.data.setdefault(key, value)
+                self.global_data.setdefault(key, value)
         # Add bot_owner from environment if not present
-        if not self.data[BOT_OWNERS] and os.environ.get('BOT_OWNER'):
+        if not self.global_data[BOT_OWNERS] and os.environ.get('BOT_OWNER'):
             self.add_global_user(group_name=BOT_OWNERS,
                                  user_reference=os.environ['BOT_OWNER'])
 
@@ -110,7 +110,7 @@ class Settings:
         """
         tmp_filepath = self.filepath.with_suffix('.json.tmp')
         with tmp_filepath.open('w', encoding='utf-8') as file:
-            json.dump(self.data, file, indent=2, ensure_ascii=False)
+            json.dump(self.global_data, file, indent=2, ensure_ascii=False)
             file.write('\n')
         tmp_filepath.replace(self.filepath)
 
@@ -198,7 +198,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.data.get(BOT_OWNERS, []))
+            users_list=self.global_data.get(BOT_OWNERS, []))
 
     def is_bot_admin(self,
                      user: Optional[telegram.User]
@@ -211,7 +211,7 @@ class Settings:
         """
         return self.is_bot_owner(user=user) or self.user_in_list(
             user=user,
-            users_list=self.data.get(BOT_ADMINS, []))
+            users_list=self.global_data.get(BOT_ADMINS, []))
 
     def is_global_denied_users(self,
                                user: Optional[telegram.User]
@@ -224,7 +224,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.data.get(DENIED_USERS, []))
+            users_list=self.global_data.get(DENIED_USERS, []))
 
     def is_chat_enabled(self,
                         chat: Optional[telegram.Chat]
@@ -240,7 +240,7 @@ class Settings:
         else:
             result = str(chat.id) in {
                 chat_id
-                for chat_id in self.data.get(ENABLED_CHATS, [])
+                for chat_id in self.global_data.get(ENABLED_CHATS, [])
             }
         return result
 
@@ -302,7 +302,7 @@ class Settings:
         :param trigger: command trigger
         :return: command details
         """
-        commands_settings = self.data.get(ENABLED_COMMANDS, {})
+        commands_settings = self.global_data.get(ENABLED_COMMANDS, {})
         command_settings = commands_settings.get(trigger, {})
         return {
             COMMAND_STATUS: command_settings.get(COMMAND_STATUS, True),
@@ -418,7 +418,7 @@ class Settings:
         :param group_name: name of the group to add the user
         :param user_reference: user id or username to add
         """
-        users = self.data.setdefault(group_name, [])
+        users = self.global_data.setdefault(group_name, [])
         user_reference = self.normalize_user_ref(value=user_reference)
         if user_reference not in users:
             users.append(user_reference)
@@ -434,7 +434,7 @@ class Settings:
         :param group_name: name of the group to remove the user
         :param user_reference: user id or username to remove
         """
-        users = self.data.setdefault(group_name, [])
+        users = self.global_data.setdefault(group_name, [])
         user_reference = self.normalize_user_ref(value=user_reference)
         if user_reference in users:
             users.remove(user_reference)
@@ -450,7 +450,7 @@ class Settings:
         :param chat_id: chat id as string
         :param status: True to add, False to remove
         """
-        chats = self.data.setdefault(ENABLED_CHATS, [])
+        chats = self.global_data.setdefault(ENABLED_CHATS, [])
         if status and chat_id not in chats:
             # Add chat
             chats.append(chat_id)
@@ -474,7 +474,7 @@ class Settings:
         :param scope: scope of enabled chats
         :return:
         """
-        commands_settings = self.data.setdefault(ENABLED_COMMANDS, {})
+        commands_settings = self.global_data.setdefault(ENABLED_COMMANDS, {})
         command = commands_settings.setdefault(trigger, {})
         command[COMMAND_STATUS] = status
         command.setdefault(COMMAND_ACCESS_LISTS, [])

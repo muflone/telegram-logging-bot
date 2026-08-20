@@ -118,7 +118,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.global_data.get(BOT_OWNERS)))
+            sorted(self.bot.settings.get_global_list(list_name=BOT_OWNERS)))
         await update.effective_message.reply_text(
             text=('Bot owners:\n'
                   '\n'
@@ -165,7 +165,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.global_data.get(BOT_ADMINS)))
+            sorted(self.bot.settings.get_global_list(list_name=BOT_ADMINS)))
         await update.effective_message.reply_text(
             text=('Bot admins:\n'
                   '\n'
@@ -212,7 +212,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         users_list = '\n'.join(
-            sorted(self.bot.settings.global_data.get(DENIED_USERS)))
+            sorted(self.bot.settings.get_global_list(list_name=DENIED_USERS)))
         await update.effective_message.reply_text(
             text=('Denied users:\n'
                   '\n'
@@ -259,7 +259,7 @@ class PluginAdmin(BasePlugin):
             command: Command,
     ) -> None:
         chats_list = '\n'.join(
-            sorted(self.bot.settings.global_data.get(ENABLED_CHATS)))
+            sorted(self.bot.settings.get_global_list(list_name=ENABLED_CHATS)))
         await update.effective_message.reply_text(
             text=('Enabled chats:\n'
                   '\n'

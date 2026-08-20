@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
+import copy
 import json
 import os
 from typing import TYPE_CHECKING, Any
@@ -100,7 +101,8 @@ class Settings:
             for key, value in self.get_empty_default_data().items():
                 self.global_data.setdefault(key, value)
         # Add bot_owner from environment if not present
-        if not self.global_data[BOT_OWNERS] and os.environ.get('BOT_OWNER'):
+        if (not self.get_global_list(list_name=BOT_OWNERS) and
+                os.environ.get('BOT_OWNER')):
             self.add_global_user(group_name=BOT_OWNERS,
                                  user_reference=os.environ['BOT_OWNER'])
 
@@ -161,6 +163,17 @@ class Settings:
             handle.write('\n')
         tmp_filepath.replace(filepath)
 
+    def get_global_list(self,
+                        list_name: str
+                        ) -> list[str]:
+        """
+        Return a list from global data
+
+        :param list_name: list name to get
+        :return: list of members
+        """
+        return copy.copy(self.global_data.get(list_name, []))
+
     def user_in_list(self,
                      user: Optional[telegram.User],
                      users_list: list[str]
@@ -198,7 +211,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.global_data.get(BOT_OWNERS, []))
+            users_list=self.get_global_list(list_name=BOT_OWNERS))
 
     def is_bot_admin(self,
                      user: Optional[telegram.User]
@@ -211,7 +224,7 @@ class Settings:
         """
         return self.is_bot_owner(user=user) or self.user_in_list(
             user=user,
-            users_list=self.global_data.get(BOT_ADMINS, []))
+            users_list=self.get_global_list(list_name=BOT_ADMINS))
 
     def is_global_denied_users(self,
                                user: Optional[telegram.User]
@@ -224,7 +237,7 @@ class Settings:
         """
         return self.user_in_list(
             user=user,
-            users_list=self.global_data.get(DENIED_USERS, []))
+            users_list=self.get_global_list(list_name=DENIED_USERS))
 
     def is_chat_enabled(self,
                         chat: Optional[telegram.Chat]
@@ -240,7 +253,7 @@ class Settings:
         else:
             result = str(chat.id) in {
                 chat_id
-                for chat_id in self.global_data.get(ENABLED_CHATS, [])
+                for chat_id in self.get_global_list(list_name=ENABLED_CHATS)
             }
         return result
 

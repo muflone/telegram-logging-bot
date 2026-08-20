@@ -34,12 +34,34 @@ class PluginAdminChat(BasePlugin):
         :return: tuple of Command
         """
         return (
+            self.new_command(trigger='admin_chat_list_chat_admins',
+                             description='List chat admins',
+                             callback=self.do_command_admin_list_chat_admins,
+                             include_in_list=False,
+                             sequence=910),
             self.new_command(trigger='admin_chat_set_chat_admins',
                              description='Set chat admins',
                              callback=self.do_command_admin_set_chat_admins,
                              include_in_list=False,
-                             sequence=910),
+                             sequence=911),
         )
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_chat_admins(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        chat = update.effective_chat
+        users_list = '\n'.join(
+            sorted(self.bot.settings.get_list_from_chat_data(
+                chat_id=str(chat.id),
+                list_name=CHAT_ADMINS)))
+        await update.effective_message.reply_text(
+            text=(f'Chat admins for {chat.id}:\n'
+                  '\n'
+                  f'{users_list or 'None'}'))
 
     @BasePlugin.call_command
     async def do_command_admin_set_chat_admins(

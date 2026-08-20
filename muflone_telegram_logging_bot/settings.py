@@ -287,23 +287,27 @@ class Settings:
             }
         return result
 
-    def is_in_chat_group(self,
-                         chat_id: str,
-                         user: Optional[telegram.User],
-                         group: str
-                         ) -> bool:
+    def is_in_chat_list(self,
+                        chat_id: str,
+                        user: Optional[telegram.User],
+                        access_list: str
+                        ) -> bool:
         """
-        Check if the user is in the specified chat group
+        Check if the user is in the specified chat list
 
         :param chat_id: chat id as string
         :param user: user details
-        :param group: chat group to check
-        :return: True if the user is in the chat group
+        :param access_list: list to check
+        :return: True if the user is in the access list
         """
-        chat_settings = self.load_chat(chat_id=chat_id)
-        return self.user_in_list(
-            user=user,
-            users_list=chat_settings.get(group, []))
+        if not chat_id:
+            result = False
+        else:
+            result = self.user_in_list(
+                user=user,
+                users_list=self.get_list_from_chat_data(chat_id=chat_id,
+                                                        list_name=access_list))
+        return result
 
     def is_chat_denied_users(self,
                              chat_id: str,
@@ -316,9 +320,9 @@ class Settings:
         :param user: user details
         :return: True if the user is in the denied_users chat group
         """
-        return self.is_in_chat_group(chat_id=chat_id,
-                                     user=user,
-                                     group=DENIED_USERS)
+        return self.is_in_chat_list(chat_id=chat_id,
+                                    user=user,
+                                    access_list=DENIED_USERS)
 
     def is_chat_admin(self,
                       chat_id: str,
@@ -332,9 +336,9 @@ class Settings:
         :return: True if the user is in the chat groups
         """
         return (self.is_bot_admin(user=user) or
-                self.is_in_chat_group(chat_id=chat_id,
-                                      user=user,
-                                      group=CHAT_ADMINS))
+                self.is_in_chat_list(chat_id=chat_id,
+                                     user=user,
+                                     access_list=CHAT_ADMINS))
 
     def get_command_settings(self,
                              trigger: str
@@ -418,9 +422,9 @@ class Settings:
                         # Bot admins are allowed to execute the command
                         result = True
                         break
-                    elif self.is_in_chat_group(chat_id=str(chat.id),
-                                               user=user,
-                                               group=access):
+                    elif self.is_in_chat_list(chat_id=str(chat.id),
+                                              user=user,
+                                              access_list=access):
                         # Only users in the specified access group are
                         # allowed to execute the command
                         result = True

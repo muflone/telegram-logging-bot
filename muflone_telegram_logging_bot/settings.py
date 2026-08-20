@@ -62,6 +62,7 @@ class Settings:
         self.filepath = filepath
         self.chats_dir = chats_dir
         self.global_data = {}
+        self.chats_data = {}
         self.load()
 
     def get_empty_default_data(self) -> dict[str, Any]:
@@ -105,6 +106,11 @@ class Settings:
                 os.environ.get('BOT_OWNER')):
             self.add_global_user(group_name=BOT_OWNERS,
                                  user_reference=os.environ['BOT_OWNER'])
+        # Load every chat settings
+        for chat_path in self.chats_dir.glob('*'):
+            if chat_path.is_dir():
+                self.chats_data[chat_path.name] = self.load_chat(
+                    chat_id=chat_path.name)
 
     def save(self) -> None:
         """

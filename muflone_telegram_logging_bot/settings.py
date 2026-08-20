@@ -186,7 +186,7 @@ class Settings:
 
         :return: dictionary with commands details
         """
-        return copy.deepcopy(self.global_data.get(ENABLED_COMMANDS, {}))
+        return self.global_data.get(ENABLED_COMMANDS, {})
 
     def user_in_list(self,
                      user: Optional[telegram.User],

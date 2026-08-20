@@ -475,6 +475,24 @@ class Settings:
             users.remove(user_reference)
             self.save()
 
+    def add_chat_user(self,
+                      chat_id: str,
+                      access_list: str,
+                      user_reference: str
+                      ) -> None:
+        """
+        Add the specified user_reference to the chat access_list
+
+        :param chat_id: chat id as string
+        :param access_list: name of the group to add the user
+        :param user_reference: user id or username to add
+        """
+        users = self.chats_data.get(chat_id, {}).setdefault(access_list, [])
+        user_reference = self._normalize_user_ref(value=user_reference)
+        if user_reference not in users:
+            users.append(user_reference)
+            self.save_chat(chat_id=chat_id)
+
     def set_chat_enabled(self,
                          chat_id: str,
                          status: bool

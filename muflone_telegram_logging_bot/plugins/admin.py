@@ -26,6 +26,7 @@ from .base import BasePlugin
 from ..command import Command
 from ..settings import (BOT_ADMINS,
                         BOT_OWNERS,
+                        CHAT_ADMINS,
                         COMMAND_ACCESS_LISTS,
                         COMMAND_SCOPE,
                         COMMAND_STATUS,
@@ -66,36 +67,41 @@ class PluginAdmin(BasePlugin):
                              callback=self.do_command_admin_set_bot_admins,
                              include_in_list=False,
                              sequence=831),
+            self.new_command(trigger='admin_list_chat_admins',
+                             description='List chat admins',
+                             callback=self.do_command_admin_list_chat_admins,
+                             include_in_list=False,
+                             sequence=840),
             self.new_command(trigger='admin_list_denied_users',
                              description='List denied users',
                              callback=self.do_command_admin_list_denied_users,
                              include_in_list=False,
-                             sequence=840),
+                             sequence=850),
             self.new_command(trigger='admin_set_denied_users',
                              description='Set denied users',
                              callback=self.do_command_admin_set_denied_users,
                              include_in_list=False,
-                             sequence=841),
+                             sequence=851),
             self.new_command(trigger='admin_list_chats',
                              description='List enabled chats',
                              callback=self.do_command_admin_list_chats,
                              include_in_list=False,
-                             sequence=850),
+                             sequence=860),
             self.new_command(trigger='admin_set_chats',
                              description='Set enabled chats',
                              callback=self.do_command_admin_set_chats,
                              include_in_list=False,
-                             sequence=851),
+                             sequence=861),
             self.new_command(trigger='admin_list_commands',
                              description='List commands',
                              callback=self.do_command_admin_list_commands,
                              include_in_list=False,
-                             sequence=860),
+                             sequence=870),
             self.new_command(trigger='admin_set_commands',
                              description='Set enabled commands',
                              callback=self.do_command_admin_set_commands,
                              include_in_list=False,
-                             sequence=861),
+                             sequence=871),
         )
 
     @BasePlugin.call_command
@@ -204,6 +210,23 @@ class PluginAdmin(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_chat_admins(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        chat = update.effective_chat
+        users_list = '\n'.join(
+            sorted(self.bot.settings.get_list_from_chat_data(
+                chat_id=str(chat.id),
+                list_name=CHAT_ADMINS)))
+        await update.effective_message.reply_text(
+            text=(f'Chat admins for {chat.id}:\n'
+                  '\n'
+                  f'{users_list or 'None'}'))
 
     @BasePlugin.call_command
     async def do_command_admin_list_denied_users(

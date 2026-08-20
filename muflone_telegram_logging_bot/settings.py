@@ -468,7 +468,7 @@ class Settings:
         """
         Enable or disable the specified trigger from the global commands list
 
-        :param chat_id: chat ID
+        :param trigger: command name
         :param status: True to enable, False to disable
         :param access_lists: access list
         :param scope: scope of enabled chats

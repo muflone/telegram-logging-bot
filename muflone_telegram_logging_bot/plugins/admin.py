@@ -285,7 +285,7 @@ class PluginAdmin(BasePlugin):
             action = args[0]
             value = args[1]
             if value == 'this':
-                value = update.effective_chat.id
+                value = str(update.effective_chat.id)
             if action == 'add':
                 self.bot.settings.set_chat_enabled(chat_id=value,
                                                    status=True)

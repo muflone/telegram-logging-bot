@@ -115,23 +115,23 @@ class Settings:
         tmp_filepath.replace(self.filepath)
 
     def get_chat_filepath(self,
-                          chat_id: int | str
+                          chat_id: str
                           ) -> pathlib.Path:
         """
         Get chat settings filepath
 
-        :param chat_id: chat id
+        :param chat_id: chat id as string
         :return: settings filepath
         """
-        return self.chats_dir / str(chat_id) / 'settings.json'
+        return self.chats_dir / chat_id / 'settings.json'
 
     def load_chat(self,
-                  chat_id: int | str
+                  chat_id: str
                   ) -> dict[str, Any]:
         """
         Load chat settings
 
-        :param chat_id: chat id
+        :param chat_id: chat id as string
         :return: chat settings
         """
         filepath = self.get_chat_filepath(chat_id=chat_id)
@@ -145,13 +145,13 @@ class Settings:
         return result
 
     def save_chat(self,
-                  chat_id: int | str,
+                  chat_id: str,
                   data: dict[str, Any]
                   ) -> None:
         """
         Load chat settings
 
-        :param chat_id: chat id
+        :param chat_id: chat id as string
         :param data: chat settings
         """
         filepath = self.get_chat_filepath(chat_id=chat_id)
@@ -239,20 +239,20 @@ class Settings:
             result = False
         else:
             result = str(chat.id) in {
-                str(chat_id)
+                chat_id
                 for chat_id in self.data.get(ENABLED_CHATS, [])
             }
         return result
 
     def is_in_chat_group(self,
-                         chat_id: int | str,
+                         chat_id: str,
                          user: Optional[telegram.User],
                          group: str
                          ) -> bool:
         """
         Check if the user is in the specified chat group
 
-        :param chat_id: chat ID
+        :param chat_id: chat id as string
         :param user: user details
         :param group: chat group to check
         :return: True if the user is in the chat group
@@ -263,13 +263,13 @@ class Settings:
             users_list=chat_settings.get(group, []))
 
     def is_chat_denied_users(self,
-                             chat_id: int | str,
+                             chat_id: str,
                              user: Optional[telegram.User]
                              ) -> bool:
         """
         Check if the user is in the denied_users chat group
 
-        :param chat_id: chat ID
+        :param chat_id: chat id as string
         :param user: user details
         :return: True if the user is in the denied_users chat group
         """
@@ -278,13 +278,13 @@ class Settings:
                                      group=DENIED_USERS)
 
     def is_chat_admin(self,
-                      chat_id: int | str,
+                      chat_id: str,
                       user: Optional[telegram.User]
                       ) -> bool:
         """
         Check if the user is in the bot_admin or in the chat_admins chat group
 
-        :param chat_id: chat ID
+        :param chat_id: chat id as string
         :param user: user details
         :return: True if the user is in the chat groups
         """
@@ -339,7 +339,8 @@ class Settings:
         elif not chat:
             # Messages without chat are denied
             result = False
-        elif self.is_chat_denied_users(chat_id=chat.id, user=user):
+        elif self.is_chat_denied_users(chat_id=str(chat.id),
+                                       user=user):
             # Users excluded for single chat cannot do anything
             result = False
         elif not self.is_chat_enabled(chat=chat):
@@ -374,7 +375,7 @@ class Settings:
                         # Bot admins are allowed to execute the command
                         result = True
                         break
-                    elif self.is_in_chat_group(chat_id=chat.id,
+                    elif self.is_in_chat_group(chat_id=str(chat.id),
                                                user=user,
                                                group=access):
                         # Only users in the specified access group are
@@ -446,11 +447,10 @@ class Settings:
         """
         Add or remove the specified chat from the global chats list
 
-        :param chat_id: chat ID
+        :param chat_id: chat id as string
         :param status: True to add, False to remove
         """
         chats = self.data.setdefault(ENABLED_CHATS, [])
-        chat_id = str(chat_id)
         if status and chat_id not in chats:
             # Add chat
             chats.append(chat_id)

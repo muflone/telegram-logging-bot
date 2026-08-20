@@ -169,6 +169,19 @@ class Settings:
             handle.write('\n')
         tmp_filepath.replace(filepath)
 
+    def get_list_from_chat_data(self,
+                                chat_id: str,
+                                list_name: str
+                                ) -> list[str]:
+        """
+        Return a list from chat data
+
+        :param chat_id: chat id as string
+        :param list_name: list name to get
+        :return: list of members
+        """
+        return copy.copy(self.chats_data.get(chat_id, {}).get(list_name, []))
+
     def get_list_from_global_data(self,
                                   list_name: str
                                   ) -> list[str]:

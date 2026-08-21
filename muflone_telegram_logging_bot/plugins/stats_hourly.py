@@ -55,6 +55,7 @@ class PluginStatsHourly(BasePlugin):
             self.new_command(trigger='stats_hourly',
                              description='Show messages count chart by hour',
                              callback=self.do_command,
+                             parameters=None,
                              include_in_list=True,
                              sequence=603),
         )

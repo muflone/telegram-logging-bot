@@ -39,11 +39,13 @@ class PluginDetails(BasePlugin):
             self.new_command(trigger='chat_details',
                              description='Chat details',
                              callback=self.do_command_chat_details,
+                             parameters=None,
                              include_in_list=False,
                              sequence=30),
             self.new_command(trigger='user_details',
                              description='User details',
                              callback=self.do_command_user_details,
+                             parameters=None,
                              include_in_list=False,
                              sequence=31),
         )

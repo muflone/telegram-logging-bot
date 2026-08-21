@@ -39,6 +39,7 @@ class PluginHelp(BasePlugin):
             self.new_command(trigger='help',
                              description='Show help',
                              callback=self.do_command,
+                             parameters=None,
                              include_in_list=True,
                              sequence=20),
         )
@@ -54,9 +55,13 @@ class PluginHelp(BasePlugin):
             # Include only commands available to be run
             if (item.trigger and item.description and
                     self.bot.settings.can_run_command(update, item)):
+                item_parameters = (' (Has parameters)'
+                                   if item.parameters
+                                   else '')
                 commands_description.append(
                     f'/{item.trigger}\n'
-                    f'{item.description}\n')
+                    f'{item.description}'
+                    f'{item_parameters}\n')
         await update.effective_message.reply_text(
             text='\n'.join(commands_description) or
                  'No commands available.')

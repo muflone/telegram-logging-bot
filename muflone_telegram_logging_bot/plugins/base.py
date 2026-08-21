@@ -31,11 +31,12 @@ import telegram.ext
 from ..command import Command
 
 if TYPE_CHECKING:
-    from typing import Callable, Self
+    from typing import Callable, Optional, Self
 
     import telegram
 
     from ..bot import Bot
+    from ..parameter import Parameter
 
 
 class BasePlugin(object):
@@ -127,6 +128,7 @@ class BasePlugin(object):
                     trigger: str,
                     description: str,
                     callback: Callable,
+                    parameters: Optional[tuple[Parameter, ...]],
                     include_in_list: bool,
                     sequence: int,
                     ) -> Command:
@@ -136,6 +138,7 @@ class BasePlugin(object):
         :param trigger: command trigger
         :param description: command description
         :param callback: command callback
+        :param parameters: parameters
         :param include_in_list: include in commands list
         :param sequence: ordering sequence
         :return: new Command object
@@ -144,5 +147,9 @@ class BasePlugin(object):
                        trigger=trigger,
                        description=description,
                        callback=callback,
+                       parameters={
+                           item.name: item
+                           for item in parameters
+                       } if parameters else {},
                        include_in_list=include_in_list,
                        sequence=sequence)

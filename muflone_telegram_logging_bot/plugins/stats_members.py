@@ -58,6 +58,7 @@ class PluginStatsMembers(BasePlugin):
             self.new_command(trigger='stats_members',
                              description='Show members growth chart',
                              callback=self.do_command,
+                             parameters=None,
                              include_in_list=True,
                              sequence=601),
         )

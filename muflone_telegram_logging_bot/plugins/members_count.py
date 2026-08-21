@@ -47,6 +47,7 @@ class PluginMembersCount(BasePlugin):
             self.new_command(trigger='members_count',
                              description='Collect members count statistics',
                              callback=self.do_command,
+                             parameters=None,
                              include_in_list=False,
                              sequence=500),
         )

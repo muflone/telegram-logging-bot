@@ -55,6 +55,7 @@ class PluginStatsActiveUsers(BasePlugin):
                              description='Show most active users by '
                                          'message numbers',
                              callback=self.do_command,
+                             parameters=None,
                              include_in_list=True,
                              sequence=602),
         )

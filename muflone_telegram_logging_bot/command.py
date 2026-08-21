@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Callable
 
+    from .parameter import Parameter
     from .plugins.base import BasePlugin
 
 
@@ -34,5 +35,6 @@ class Command:
     trigger: str
     description: Optional[str]
     callback: Callable
+    parameters: Optional[dict[str, Parameter]]
     include_in_list: bool
     sequence: int

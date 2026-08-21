@@ -66,6 +66,12 @@ class PluginAdminChat(BasePlugin):
                              parameters=None,
                              include_in_list=False,
                              sequence=930),
+            self.new_command(trigger='admin_chat_set_parameters',
+                             description='Set command parameters',
+                             callback=self.do_command_admin_set_parameters,
+                             parameters=None,
+                             include_in_list=False,
+                             sequence=931),
         )
 
     @BasePlugin.call_command
@@ -231,3 +237,44 @@ class PluginAdminChat(BasePlugin):
                     ])
                 await update.effective_message.reply_html(
                     text=f'<pre>{table.get_string()}</pre>')
+
+    @BasePlugin.call_command
+    async def do_command_admin_set_parameters(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 3:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} set <command> <parameter> <value>\n'
+                      f'/{command.trigger} unset <command> <parameter>'
+                      ))
+        else:
+            action = args[0]
+            command_name = args[1]
+            parameter_name = args[2]
+            parameter_value = ' '.join(args[3:]) if len(args) >= 4 else None
+            chat = update.effective_chat
+            if action == 'set':
+                self.bot.settings.set_command_parameter(
+                    chat_id=str(chat.id),
+                    command_name=command_name,
+                    parameter=parameter_name,
+                    value=parameter_value)
+                await update.effective_message.reply_text(
+                    text=f'Command parameter {parameter_name} set')
+            elif action == 'unset':
+                self.bot.settings.unset_command_parameter(
+                    chat_id=str(chat.id),
+                    command_name=command_name,
+                    parameter=parameter_name)
+                await update.effective_message.reply_text(
+                    text=f'Command parameter {parameter_name} unset')
+            else:
+                await update.effective_message.reply_text(
+                    text='Invalid action')

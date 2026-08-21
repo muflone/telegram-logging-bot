@@ -20,6 +20,8 @@
 
 import telegram.ext
 
+import prettytable
+
 from .base import BasePlugin
 from ..command import Command
 from ..settings import (CHAT_ADMINS,
@@ -58,6 +60,12 @@ class PluginAdminChat(BasePlugin):
                              parameters=None,
                              include_in_list=False,
                              sequence=921),
+            self.new_command(trigger='admin_chat_list_parameters',
+                             description='List command parameters',
+                             callback=self.do_command_admin_list_parameters,
+                             parameters=None,
+                             include_in_list=False,
+                             sequence=930),
         )
 
     @BasePlugin.call_command
@@ -165,3 +173,61 @@ class PluginAdminChat(BasePlugin):
             else:
                 await update.effective_message.reply_text(
                     text='Invalid action')
+
+    @BasePlugin.call_command
+    async def do_command_admin_list_parameters(
+            self,
+            update: telegram.Update,
+            context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+            command: Command,
+    ) -> None:
+        args = context.args
+        if len(args) < 1:
+            await update.effective_message.reply_text(
+                text=('Invalid arguments:\n'
+                      '\n'
+                      f'Usage:\n'
+                      f'/{command.trigger} <command>'
+                      ))
+        else:
+            command_name = args[0]
+            chat = update.effective_chat
+            if command_name not in self.bot.commands:
+                # Invalid command name
+                await update.effective_message.reply_text(
+                    text=(f'Invalid command {command_name}'))
+            elif not self.bot.commands[command_name].parameters:
+                # The command has not parameters
+                await update.effective_message.reply_text(
+                    text=(f'Command {command_name} has no parameters'))
+            else:
+                custom_parameters = self.bot.settings.get_command_parameters(
+                        chat_id=str(chat.id),
+                        command_name=command_name)
+                # Prepare table for results
+                table = prettytable.PrettyTable()
+                table.field_names = ('Name',
+                                     'Description',
+                                     'Type',
+                                     'Null',
+                                     'Default',
+                                     'Options',
+                                     'Set',
+                                     'Value')
+                table.align = 'l'
+                table.align['Custom'] = 'c'
+                for item in sorted(
+                        self.bot.commands[command_name].parameters.values(),
+                        key=lambda item: item.name):
+                    table.add_row(row=[
+                        item.name,
+                        item.description,
+                        item.type,
+                        item.null,
+                        item.default,
+                        item.options,
+                        '✅' if item.name in custom_parameters else '❌',
+                        item.parse_value(custom_parameters.get(item.name)),
+                    ])
+                await update.effective_message.reply_html(
+                    text=f'<pre>{table.get_string()}</pre>')

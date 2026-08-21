@@ -201,11 +201,11 @@ class PluginAdminChat(BasePlugin):
             if command_name not in self.bot.commands:
                 # Invalid command name
                 await update.effective_message.reply_text(
-                    text=(f'Invalid command {command_name}'))
+                    text=f'Invalid command {command_name}')
             elif not self.bot.commands[command_name].parameters:
                 # The command has not parameters
                 await update.effective_message.reply_text(
-                    text=(f'Command {command_name} has no parameters'))
+                    text=f'Command {command_name} has no parameters')
             else:
                 custom_parameters = self.bot.settings.get_command_parameters(
                         chat_id=str(chat.id),

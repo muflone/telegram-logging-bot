@@ -336,7 +336,7 @@ class PluginAdmin(BasePlugin):
             command_settings = commands_settings.get(item.trigger, {})
             table.add_row(row=[
                 item.trigger,
-                command_settings.get(COMMAND_STATUS, False) and '✅' or '❌',
+                '✅' if command_settings.get(COMMAND_STATUS, False) else '❌',
                 ','.join(command_settings.get(COMMAND_ACCESS_LISTS, [])),
                 ','.join(command_settings.get(COMMAND_SCOPE, [])),
             ])

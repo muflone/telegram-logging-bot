@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 BOT_OWNERS = 'bot_owners'
 BOT_ADMINS = 'bot_admins'
 CHAT_ADMINS = 'chat_admins'
+COMMAND_PARAMETERS = 'command_parameters'
 DENIED_USERS = 'denied_users'
 ENABLED_CHATS = 'enabled_chats'
 ENABLED_COMMANDS = 'enabled_commands'
@@ -124,6 +125,7 @@ class Settings:
                 result = json.load(handle)
             result.setdefault(CHAT_ADMINS, [])
             result.setdefault(DENIED_USERS, [])
+            result.setdefault(COMMAND_PARAMETERS, {})
         self.chats_data[chat_id] = result
 
     def save_chat(self,
@@ -176,6 +178,22 @@ class Settings:
         :return: dictionary with commands details
         """
         return self.global_data.get(ENABLED_COMMANDS, {})
+
+    def get_command_parameters(self,
+                               chat_id: str,
+                               command_name: str,
+                               ) -> dict[str, Any]:
+        """
+        Return the parameters for a command
+
+        :param chat_id: chat id as string
+        :param command_name: command name
+        :return: dictionary with commands parameters
+        """
+        return (self.chats_data
+                .get(chat_id, {})
+                .setdefault(COMMAND_PARAMETERS, {})
+                .setdefault(command_name, {}))
 
     def user_in_list(self,
                      user: Optional[telegram.User],
@@ -577,6 +595,7 @@ class Settings:
         return {
             CHAT_ADMINS: [],
             DENIED_USERS: [],
+            COMMAND_PARAMETERS: {},
         }
 
     def _normalize_user_ref(self, value: str | int) -> str:

@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 
 from .base import BasePlugin
 from ..command import Command
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     import telegram
@@ -38,32 +39,43 @@ class PluginPing(BasePlugin):
         return (
             self.new_command(trigger='ping',
                              description='Ping if the bot is alive',
-                             callback=self.do_command_ping,
-                             parameters=None,
+                             callback=self.do_command,
+                             parameters=(
+                                 Parameter(name='text',
+                                           description='Message text',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='PING!'),
+                             ),
                              include_in_list=True,
                              sequence=100),
             self.new_command(trigger='pong',
                              description='Pong if the bot is alive',
-                             callback=self.do_command_pong,
-                             parameters=None,
+                             callback=self.do_command,
+                             parameters=(
+                                 Parameter(name='text',
+                                           description='Message text',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='PONG!'),
+                             ),
                              include_in_list=True,
                              sequence=101),
         )
 
     @BasePlugin.call_command
-    async def do_command_ping(self,
-                              update: telegram.Update,
-                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              command: Command,
-                              ) -> None:
+    async def do_command(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         command: Command,
+                         ) -> None:
+        chat = update.effective_chat
+        custom_parameters = self.bot.settings.get_command_parameters(
+            chat_id=str(chat.id),
+            command_name=command.trigger)
         await update.effective_message.reply_text(
-            text='PONG!')
-
-    @BasePlugin.call_command
-    async def do_command_pong(self,
-                              update: telegram.Update,
-                              context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                              command: Command,
-                              ) -> None:
-        await update.effective_message.reply_text(
-            text='PING!')
+            text=(
+                command.parameters['text']
+                .parse_value(custom_parameters.get('text'))
+            )
+        )

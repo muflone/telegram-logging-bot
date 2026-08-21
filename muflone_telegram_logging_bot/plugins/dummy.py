@@ -25,6 +25,7 @@ import telegram.ext
 
 from .base import BasePlugin
 from ..command import Command
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -40,35 +41,46 @@ class PluginDummy(BasePlugin):
         return (
             self.new_command(trigger='dummy1',
                              description='Dummy command',
-                             callback=self.do_command_1,
-                             parameters=None,
+                             callback=self.do_command,
+                             parameters=(
+                                 Parameter(name='text',
+                                           description='Message text',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='dummy1'),
+                             ),
                              include_in_list=False,
                              sequence=1000),
             self.new_command(trigger='dummy2',
                              description='Dummy command',
-                             callback=self.do_command_2,
-                             parameters=None,
+                             callback=self.do_command,
+                             parameters=(
+                                 Parameter(name='text',
+                                           description='Message text',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='dummy2'),
+                             ),
                              include_in_list=False,
                              sequence=1001),
         )
 
     @BasePlugin.call_command
-    async def do_command_1(self,
-                           update: telegram.Update,
-                           context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                           command: Command,
-                           ) -> None:
+    async def do_command(self,
+                         update: telegram.Update,
+                         context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                         command: Command,
+                         ) -> None:
+        chat = update.effective_chat
+        custom_parameters = self.bot.settings.get_command_parameters(
+            chat_id=str(chat.id),
+            command_name=command.trigger)
         await update.effective_message.reply_text(
-            text='dummy1')
-
-    @BasePlugin.call_command
-    async def do_command_2(self,
-                           update: telegram.Update,
-                           context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                           command: Command,
-                           ) -> None:
-        await update.effective_message.reply_text(
-            text='dummy2')
+            text=(
+                command.parameters['text']
+                .parse_value(custom_parameters.get('text'))
+            )
+        )
 
     def get_background_tasks(self) -> tuple[Callable, ...]:
         """

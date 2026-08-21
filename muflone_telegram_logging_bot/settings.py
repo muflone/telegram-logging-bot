@@ -195,6 +195,26 @@ class Settings:
                 .setdefault(COMMAND_PARAMETERS, {})
                 .setdefault(command_name, {}))
 
+    def set_command_parameter(self,
+                              chat_id: str,
+                              command_name: str,
+                              parameter: str,
+                              value: Any
+                              ) -> None:
+        """
+        Set a parameter for a command
+
+        :param chat_id: chat id as string
+        :param command_name: command name
+        :param parameter: parameter name
+        :param value: parameter value
+        """
+        custom_parameter = self.get_command_parameters(
+            chat_id=chat_id,
+            command_name=command_name)
+        custom_parameter[parameter] = value
+        self.save_chat(chat_id=chat_id)
+
     def user_in_list(self,
                      user: Optional[telegram.User],
                      users_list: list[str]

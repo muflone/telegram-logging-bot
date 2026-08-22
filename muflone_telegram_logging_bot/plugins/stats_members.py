@@ -78,17 +78,17 @@ class PluginStatsMembers(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
+        selected_date1, selected_date2 = self.parse_dates(context=context)
         if context.args:
             # Use parsed date if specified
-            selected_date1, selected_date2 = self.parse_dates(context=context)
-            date_start = datetime.datetime.fromordinal(
-                selected_date1.toordinal())
-            date_end = datetime.datetime.fromordinal(
-                (selected_date2 + datetime.timedelta(days=1)).toordinal())
-            if date_start and date_end:
-                date_title = (f'{selected_date1.isoformat()} '
-                              f'to {selected_date2.isoformat()}')
-            valid_date = date_start and date_end
+            if valid_date := selected_date1 and selected_date2:
+                date_start = datetime.datetime.fromordinal(
+                    selected_date1.toordinal())
+                date_end = datetime.datetime.fromordinal(
+                    (selected_date2 + datetime.timedelta(days=1)).toordinal())
+                if date_start and date_end:
+                    date_title = (f'{selected_date1.isoformat()} '
+                                  f'to {selected_date2.isoformat()}')
         else:
             # Get the range from 1 month ago and today
             date_end = datetime.datetime.today()

@@ -75,15 +75,15 @@ class PluginStatsActiveUsers(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
+        selected_date = self.parse_date(context=context)
         if context.args:
             # Use parsed date if specified
-            if selected_date := self.parse_date(context=context):
+            if valid_date := selected_date is not None:
                 date_start = datetime.datetime.fromordinal(
                     selected_date.toordinal())
                 date_end = datetime.datetime.fromordinal(
                     (selected_date + datetime.timedelta(days=1)).toordinal())
                 date_title = f'{selected_date.isoformat()}'
-            valid_date = selected_date is not None
         else:
             # Use the latest 24 hours if no date was specified
             date_end = datetime.datetime.now()

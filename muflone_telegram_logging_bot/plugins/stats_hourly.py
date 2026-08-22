@@ -98,10 +98,10 @@ class PluginStatsHourly(BasePlugin):
                 command=command,
                 parameter='timezone')
             graph_title = f'Hourly messages count for {date_title}'
-            if rows := self.get_messages_by_hour(chat=chat,
-                                                 date_start=date_start,
-                                                 date_end=date_end,
-                                                 tz_name=timezone):
+            if rows := self.get_graph_data(chat=chat,
+                                           date_start=date_start,
+                                           date_end=date_end,
+                                           tz_name=timezone):
                 # Set 0 for the missing data
                 hourly_values = {
                     hour: 0
@@ -110,9 +110,8 @@ class PluginStatsHourly(BasePlugin):
                 for row in rows:
                     hourly_values[int(row['hour'])] = row['messages_count']
                 # Results found
-                image = await self.create_graph_image(
-                    values=hourly_values,
-                    title=graph_title)
+                image = await self.create_graph_image(values=hourly_values,
+                                                      title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
                     caption=f'{graph_title} ({timezone})')
@@ -132,7 +131,7 @@ class PluginStatsHourly(BasePlugin):
         Parse dates from command arguments
 
         :param context: telegram Context object
-        :return: tuple with two datetime or None
+        :return: tuple with two date or None
         """
         if context.args:
             # Get first argument
@@ -157,19 +156,19 @@ class PluginStatsHourly(BasePlugin):
             date_2 = date_1
         return (date_1, date_2)
 
-    def get_messages_by_hour(self,
-                             chat: telegram.Chat,
-                             date_start: datetime.date,
-                             date_end: datetime.date,
-                             tz_name: str,
-                             ) -> list[sqlite3.Row]:
+    def get_graph_data(self,
+                       chat: telegram.Chat,
+                       date_start: datetime.date,
+                       date_end: datetime.date,
+                       tz_name: str,
+                       ) -> list[sqlite3.Row]:
         """
-        Get the most active members by messages count
+        Get messages count grouped by hour
 
         :param chat: chat details
-        :param date_start: starting date
+        :param date_start: initial date
+        :param date_end: final date
         :param tz_name: timezone name
-        :param date_end: ending date
         :return: list of Rows with data
         """
         zone_offset = timezone_offset(tz_name=tz_name,

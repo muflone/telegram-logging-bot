@@ -96,15 +96,14 @@ class PluginStatsActiveUsers(BasePlugin):
                 command=command,
                 parameter='timezone')
             graph_title = f'Most active members for {date_title}'
-            if rows := self.get_top_members(chat=chat,
-                                            date_start=date_start,
-                                            date_end=date_end,
-                                            tz_name=timezone,
-                                            limit=15):
+            if rows := self.get_graph_data(chat=chat,
+                                           date_start=date_start,
+                                           date_end=date_end,
+                                           tz_name=timezone,
+                                           limit=15):
                 # Results found
-                image = await self.create_graph_image(
-                    rows=rows,
-                    title=graph_title)
+                image = await self.create_graph_image(rows=rows,
+                                                      title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
                     caption=f'{graph_title} ({timezone})')
@@ -137,13 +136,13 @@ class PluginStatsActiveUsers(BasePlugin):
             result = datetime.date.today()
         return result
 
-    def get_top_members(self,
-                        chat: telegram.Chat,
-                        date_start: datetime.date,
-                        date_end: datetime.date,
-                        tz_name: str,
-                        limit: int,
-                        ) -> list[sqlite3.Row]:
+    def get_graph_data(self,
+                       chat: telegram.Chat,
+                       date_start: datetime.date,
+                       date_end: datetime.date,
+                       tz_name: str,
+                       limit: int,
+                       ) -> list[sqlite3.Row]:
         """
         Get the most active members by messages count
 

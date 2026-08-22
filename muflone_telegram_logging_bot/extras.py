@@ -30,6 +30,7 @@ def utc_now_iso() -> str:
     """
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
+
 def timezone_offset(tz_name: str,
                     when: datetime.datetime
                     ) -> str:

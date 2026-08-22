@@ -71,14 +71,14 @@ class PluginStatsMembers(BasePlugin):
                          ) -> None:
         chat = update.effective_chat
         if dates := self.parse_dates(context=context):
-            start_date, end_date = dates
-            if rows := self.get_members_growth(chat=chat,
-                                               start_date=start_date,
-                                               end_date=end_date):
+            date_start, date_end = dates
+            if rows := self.get_graph_data(chat=chat,
+                                           start_date=date_start,
+                                           end_date=date_end):
                 # Results found
                 values = self.interpolate_daily_values(rows=rows,
-                                                       start_date=start_date,
-                                                       end_date=end_date)
+                                                       date_start=date_start,
+                                                       date_end=date_end)
 
                 image = self.create_graph_image(values=values,
                                                 start_date=start_date,
@@ -98,7 +98,7 @@ class PluginStatsMembers(BasePlugin):
 
     def parse_dates(self,
                     context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                    ) -> Optional[tuple[datetime.date, datetime.date]]:
+                    ) -> tuple[Optional[datetime.date], ...]:
         """
         Parse dates from command arguments
 
@@ -128,17 +128,17 @@ class PluginStatsMembers(BasePlugin):
             result = None
         return result
 
-    def get_members_growth(self,
-                           chat: telegram.Chat,
-                           start_date: datetime.date,
-                           end_date: datetime.date,
-                           ) -> list[sqlite3.Row]:
+    def get_graph_data(self,
+                       chat: telegram.Chat,
+                       date_start: datetime.date,
+                       date_end: datetime.date,
+                       ) -> list[sqlite3.Row]:
         """
         Get members count grouped by day
 
         :param chat: chat details
-        :param start_date: starting date
-        :param end_date: ending date
+        :param date_start: initial date
+        :param date_end: final date
         :return: list of Rows with data
         """
         database = self.bot.databases.get_database(
@@ -166,16 +166,16 @@ class PluginStatsMembers(BasePlugin):
                 ORDER BY date ASC
                 ''',
                 (
-                    start_date.isoformat(),
-                    end_date.isoformat(),
+                    date_start.isoformat(),
+                    date_end.isoformat(),
                 ),
             ).fetchall()
         return result
 
     def interpolate_daily_values(self,
                                  rows: list[sqlite3.Row],
-                                 start_date: datetime.date,
-                                 end_date: datetime.date,
+                                 date_start: datetime.date,
+                                 date_end: datetime.date,
                                  ) -> list[tuple[datetime.date, float]]:
         """
         Fill missing days with linear interpolation.
@@ -187,8 +187,8 @@ class PluginStatsMembers(BasePlugin):
         the nearest known value is reused.
 
         :param rows: list of Rows with data
-        :param start_date: initial date
-        :param end_date: ending date
+        :param date_start: initial date
+        :param date_end: ending date
         :return: list with tuple with date and users count
         """
         known_values = {
@@ -198,8 +198,8 @@ class PluginStatsMembers(BasePlugin):
         known_dates = sorted(known_values)
 
         result = []
-        current_date = start_date
-        while current_date <= end_date:
+        current_date = date_start
+        while current_date <= date_end:
             if current_date in known_values:
                 # Use the known value
                 value = known_values[current_date]
@@ -252,7 +252,7 @@ class PluginStatsMembers(BasePlugin):
         height = 400
         padding_left = 40
         padding_right = 20
-        padding_top = 80
+        padding_top = 50
         padding_bottom = 30
 
         chart_left = padding_left
@@ -267,19 +267,12 @@ class PluginStatsMembers(BasePlugin):
         draw = PIL.ImageDraw.Draw(im=image)
 
         title_font = load_font(size=15, bold=True)
-        subtitle_font = load_font(size=10)
         label_font = load_font(size=9)
-
+        # Draw title
         draw.text(xy=(16, 9),
                   text='Members growth',
                   fill=TITLE_COLOR,
                   font=title_font)
-
-        draw.text(xy=(16, 32),
-                  text=f'From {start_date.isoformat()} '
-                       f'to {end_date.isoformat()}',
-                  fill=SUBTITLE_COLOR,
-                  font=subtitle_font)
 
         numeric_values = [value for _, value in values]
         raw_min_value = min(numeric_values)
@@ -314,15 +307,13 @@ class PluginStatsMembers(BasePlugin):
         if min_value == max_value:
             min_value -= limit_step
             max_value += limit_step
-
+        # Draw the Y axis legend
         for value in range(int(min_value), int(max_value) + 1, tick_step):
-            y = self.value_to_y(
-                value=value,
-                min_value=base_min_value,
-                max_value=base_max_value,
-                chart_top=chart_top,
-                chart_bottom=chart_bottom,
-            )
+            y = self.value_to_y(value=value,
+                                min_value=base_min_value,
+                                max_value=base_max_value,
+                                chart_top=chart_top,
+                                chart_bottom=chart_bottom)
             draw.line(xy=(chart_left, y, chart_right, y),
                       fill=GRID_COLOR,
                       width=1)
@@ -330,9 +321,8 @@ class PluginStatsMembers(BasePlugin):
                       text=str(value),
                       fill=TEXT_COLOR,
                       font=label_font)
-
+        # Draw the points
         points = []
-
         if len(values) == 1:
             date, value = values[0]
             x = chart_left
@@ -361,7 +351,7 @@ class PluginStatsMembers(BasePlugin):
             draw.line(xy=points,
                       fill=LINE_COLOR,
                       width=1)
-
+        # Draw the X axis legend
         self.draw_x_labels(draw=draw,
                            values=values,
                            chart_left=chart_left,
@@ -404,7 +394,7 @@ class PluginStatsMembers(BasePlugin):
         Draw a few dates on X axis.
         """
         if values:
-            labels_count = min(4, len(values))
+            labels_count = min(8, len(values))
             if labels_count == 1:
                 indexes = [0]
             else:

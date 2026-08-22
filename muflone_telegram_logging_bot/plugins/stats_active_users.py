@@ -29,6 +29,8 @@ from .base import BasePlugin
 from ..image import (get_user_avatar,
                      load_font)
 from ..command import Command
+from ..extras import timezone_offset
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -55,7 +57,13 @@ class PluginStatsActiveUsers(BasePlugin):
                              description='Show most active users by '
                                          'message numbers',
                              callback=self.do_command,
-                             parameters=None,
+                             parameters=(
+                                 Parameter(name='timezone',
+                                           description='Timezone',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='UTC'),
+                             ),
                              include_in_list=True,
                              sequence=602),
         )
@@ -70,27 +78,36 @@ class PluginStatsActiveUsers(BasePlugin):
         if context.args:
             # Use parsed date if specified
             if selected_date := self.parse_date(context=context):
-                rows = self.get_top_members(chat=chat,
-                                            date=selected_date,
-                                            limit=15)
-                date_title = f'{selected_date.isoformat()} (UTC)'
+                date_start = datetime.datetime.fromordinal(
+                    selected_date.toordinal())
+                date_end = datetime.datetime.fromordinal(
+                    (selected_date + datetime.timedelta(days=1)).toordinal())
+                date_title = f'{selected_date.isoformat()}'
             valid_date = selected_date is not None
         else:
             # Use the latest 24 hours if no date was specified
-            rows = self.get_top_members_24_hours(chat=chat,
-                                                 limit=15)
+            date_end = datetime.datetime.now()
+            date_start = date_end - datetime.timedelta(hours=24)
             date_title = 'the latest 24 hours'
             valid_date = True
         if valid_date:
+            timezone = self.bot.settings.get_command_parameter_value(
+                chat_id=str(chat.id),
+                command=command,
+                parameter='timezone')
             graph_title = f'Most active members for {date_title}'
-            if rows:
+            if rows := self.get_top_members(chat=chat,
+                                            date_start=date_start,
+                                            date_end=date_end,
+                                            tz_name=timezone,
+                                            limit=15):
                 # Results found
                 image = await self.create_graph_image(
                     rows=rows,
                     title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
-                    caption=graph_title)
+                    caption=f'{graph_title} ({timezone})')
             else:
                 # No results
                 await update.effective_message.reply_text(
@@ -122,17 +139,23 @@ class PluginStatsActiveUsers(BasePlugin):
 
     def get_top_members(self,
                         chat: telegram.Chat,
-                        date: datetime.date,
+                        date_start: datetime.date,
+                        date_end: datetime.date,
+                        tz_name: str,
                         limit: int,
                         ) -> list[sqlite3.Row]:
         """
         Get the most active members by messages count
 
         :param chat: chat details
-        :param date: selected date
+        :param date_start: initial date
+        :param date_end: final date
+        :param tz_name: timezone name
         :param limit: number of results
         :return: list of Rows with data
         """
+        zone_offset = timezone_offset(tz_name=tz_name,
+                                      when=date_start)
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
@@ -149,55 +172,17 @@ class PluginStatsActiveUsers(BasePlugin):
                 FROM messages
                 LEFT JOIN users
                    ON users.user_id = messages.user_id
-                WHERE DATE(messages.date) = ?
+                WHERE DATETIME(messages.date, ?) >= ?
+                  AND DATETIME(messages.date, ?) < ?
                 GROUP BY messages.user_id, users.username
                 ORDER BY messages_count DESC
                 LIMIT ?
                 ''',
                 (
-                    date.isoformat(),
-                    limit
-                )
-            ).fetchall()
-        return result
-
-    def get_top_members_24_hours(self,
-                                 chat: telegram.Chat,
-                                 limit: int,
-                                 ) -> list[sqlite3.Row]:
-        """
-        Get the most active members by messages count in the latest 24 hours
-
-        :param chat: chat details
-        :param limit: number of results
-        :return: list of Rows with data
-        """
-        date_end = datetime.datetime.now()
-        date_start = date_end - datetime.timedelta(hours=24)
-        database = self.bot.databases.get_database(
-            directory_name=str(chat.id))
-        with database.open() as connection:
-            self.update_database_schema(connection=connection)
-            result = connection.execute(
-                '''
-                SELECT
-                  messages.user_id AS user_id,
-                  users.username AS username,
-                  COALESCE(users.first_name, '') AS first_name,
-                  COALESCE(users.last_name, '') AS last_name,
-                  COUNT(*) AS messages_count,
-                  ROUND(AVG(LENGTH(messages.text)), 0) AS average_length
-                FROM messages
-                LEFT JOIN users
-                   ON users.user_id = messages.user_id
-                WHERE messages.date BETWEEN ? AND ?
-                GROUP BY messages.user_id, users.username
-                ORDER BY messages_count DESC
-                LIMIT ?
-                ''',
-                (
-                    date_start.isoformat(),
-                    date_end.isoformat(),
+                    zone_offset,
+                    date_start,
+                    zone_offset,
+                    date_end,
                     limit
                 )
             ).fetchall()
@@ -214,7 +199,7 @@ class PluginStatsActiveUsers(BasePlugin):
         :param title: graph title
         :return: binary data with the graph image
         """
-        width = 450
+        width = 500
         padding_x = 18
         padding_top = 14
         title_height = 28

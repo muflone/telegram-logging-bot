@@ -181,23 +181,23 @@ class Settings:
 
     def get_command_parameters(self,
                                chat_id: str,
-                               command_name: str,
+                               command: Command,
                                ) -> dict[str, Any]:
         """
         Return the parameters for a command
 
         :param chat_id: chat id as string
-        :param command_name: command name
+        :param command: command details
         :return: dictionary with commands parameters
         """
         return (self.chats_data
                 .get(chat_id, {})
                 .setdefault(COMMAND_PARAMETERS, {})
-                .setdefault(command_name, {}))
+                .setdefault(command.trigger, {}))
 
     def set_command_parameter(self,
                               chat_id: str,
-                              command_name: str,
+                              command: Command,
                               parameter: str,
                               value: Any
                               ) -> None:
@@ -205,31 +205,29 @@ class Settings:
         Set a parameter for a command
 
         :param chat_id: chat id as string
-        :param command_name: command name
+        :param command: command details
         :param parameter: parameter name
         :param value: parameter value
         """
-        custom_parameter = self.get_command_parameters(
-            chat_id=chat_id,
-            command_name=command_name)
+        custom_parameter = self.get_command_parameters(chat_id=chat_id,
+                                                       command=command)
         custom_parameter[parameter] = value
         self.save_chat(chat_id=chat_id)
 
     def unset_command_parameter(self,
                                 chat_id: str,
-                                command_name: str,
+                                command: Command,
                                 parameter: str,
                                 ) -> None:
         """
         Unset a parameter for a command
 
         :param chat_id: chat id as string
-        :param command_name: command name
+        :param command: command details
         :param parameter: parameter name
         """
-        custom_parameter = self.get_command_parameters(
-            chat_id=chat_id,
-            command_name=command_name)
+        custom_parameter = self.get_command_parameters(chat_id=chat_id,
+                                                       command=command)
         custom_parameter.pop(parameter)
         self.save_chat(chat_id=chat_id)
 

@@ -208,8 +208,8 @@ class PluginAdminChat(BasePlugin):
                     text=f'Command {command_name} has no parameters')
             else:
                 custom_parameters = self.bot.settings.get_command_parameters(
-                        chat_id=str(chat.id),
-                        command_name=command_name)
+                    chat_id=str(chat.id),
+                    command=self.bot.commands[command_name])
                 # Prepare table for results
                 table = prettytable.PrettyTable()
                 table.field_names = ('Name',
@@ -267,7 +267,7 @@ class PluginAdminChat(BasePlugin):
             elif action == 'set':
                 self.bot.settings.set_command_parameter(
                     chat_id=str(chat.id),
-                    command_name=command_name,
+                    command=self.bot.commands[command_name],
                     parameter=parameter_name,
                     value=parameter_value)
                 await update.effective_message.reply_text(
@@ -275,7 +275,7 @@ class PluginAdminChat(BasePlugin):
             elif action == 'unset':
                 self.bot.settings.unset_command_parameter(
                     chat_id=str(chat.id),
-                    command_name=command_name,
+                    command=self.bot.commands[command_name],
                     parameter=parameter_name)
                 await update.effective_message.reply_text(
                     text=f'Command parameter {parameter_name} unset')

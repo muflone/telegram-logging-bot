@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 
 from .base import BasePlugin
 from ..command import Command
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     import telegram
@@ -39,7 +40,14 @@ class PluginStart(BasePlugin):
             self.new_command(trigger='start',
                              description='Start bot',
                              callback=self.do_command,
-                             parameters=None,
+                             parameters=(
+                                 Parameter(name='message',
+                                           description='Message text',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='For the commands help '
+                                                   'use /help!'),
+                             ),
                              include_in_list=False,
                              sequence=10),
         )
@@ -50,5 +58,12 @@ class PluginStart(BasePlugin):
                          context: telegram.ext.ContextTypes.DEFAULT_TYPE,
                          command: Command,
                          ) -> None:
+        chat = update.effective_chat
         await update.effective_message.reply_text(
-            text='For the commands help use /help!')
+            text=(
+                self.bot.settings.get_command_parameter_value(
+                    chat_id=str(chat.id),
+                    command=command,
+                    parameter='message')
+            )
+        )

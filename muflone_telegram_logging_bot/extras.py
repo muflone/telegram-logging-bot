@@ -19,6 +19,7 @@
 ##
 
 import datetime
+import zoneinfo
 
 
 def utc_now_iso() -> str:
@@ -28,3 +29,31 @@ def utc_now_iso() -> str:
     :return: current date in ISO as string
     """
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+def timezone_offset(tz_name: str,
+                    when: datetime.datetime
+                    ) -> str:
+    """
+    Return the time offset as HH:MM for a timezone
+
+    :param tz_name: timezone name as zoneinfo.available_timezones()
+    :param when: reference datime
+    :return: string with {+/-}HH:MM
+    """
+    tz = zoneinfo.ZoneInfo(tz_name)
+
+    if when.tzinfo is None:
+        # Naive datetime to timezone
+        dt = when.replace(tzinfo=tz)
+    else:
+        # Change timezone
+        dt = when.astimezone(tz)
+    # Get offset and calculate difference in seconds
+    offset = dt.utcoffset()
+    if offset is None:
+        raise ValueError(f'Cannot determine UTC offset for {tz_name}')
+    # Format result
+    total_minutes = int(offset.total_seconds() // 60)
+    sign = '+' if total_minutes >= 0 else '-'
+    hours, minutes = divmod(abs(total_minutes), 60)
+    return f'{sign}{hours:02d}:{minutes:02d}'

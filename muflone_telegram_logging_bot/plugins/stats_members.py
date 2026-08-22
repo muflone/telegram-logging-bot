@@ -45,10 +45,9 @@ if TYPE_CHECKING:
 
 BACKGROUND = '#23272a'
 TITLE_COLOR = '#38d39f'
-SUBTITLE_COLOR = '#9aa0a6'
+TEXT_COLOR = '#9aa0a6'
 GRID_COLOR = '#343a40'
 LINE_COLOR = '#2877d5'
-TEXT_COLOR = '#9aa0a6'
 
 
 class PluginStatsMembers(BasePlugin):
@@ -389,7 +388,7 @@ class PluginStatsMembers(BasePlugin):
         else:
             draw.line(xy=points,
                       fill=LINE_COLOR,
-                      width=1)
+                      width=2)
         # Draw the X axis legend
         self.draw_x_labels(draw=draw,
                            values=values,

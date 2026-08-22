@@ -44,7 +44,7 @@ BACKGROUND = '#23272a'
 TITLE_COLOR = '#38d39f'
 TEXT_COLOR = '#9aa0a6'
 GRID_COLOR = '#343a40'
-LINE_COLOR = '#58a6dc'
+LINE_COLOR = '#2877d5'
 
 
 class PluginStatsHourly(BasePlugin):

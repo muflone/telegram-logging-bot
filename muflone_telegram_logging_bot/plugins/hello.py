@@ -37,7 +37,7 @@ class PluginHello(BasePlugin):
                              description='Hello command',
                              callback=self.do_command,
                              parameters=(
-                                 Parameter(name='greet',
+                                 Parameter(name='message',
                                            description='Greeting text',
                                            type=ParameterType.STRING,
                                            null=False,
@@ -60,7 +60,7 @@ class PluginHello(BasePlugin):
                 self.bot.settings.get_command_parameter_value(
                     chat_id=str(chat.id),
                     command=command,
-                    parameter='greet'
+                    parameter='message'
                 ).format(NAME=user.full_name,
                          FIRST_NAME=user.first_name,
                          LAST_NAME=user.last_name,

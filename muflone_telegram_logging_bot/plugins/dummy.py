@@ -43,7 +43,7 @@ class PluginDummy(BasePlugin):
                              description='Dummy command',
                              callback=self.do_command,
                              parameters=(
-                                 Parameter(name='text',
+                                 Parameter(name='message',
                                            description='Message text',
                                            type=ParameterType.STRING,
                                            null=False,
@@ -55,7 +55,7 @@ class PluginDummy(BasePlugin):
                              description='Dummy command',
                              callback=self.do_command,
                              parameters=(
-                                 Parameter(name='text',
+                                 Parameter(name='message',
                                            description='Message text',
                                            type=ParameterType.STRING,
                                            null=False,
@@ -77,7 +77,7 @@ class PluginDummy(BasePlugin):
                 self.bot.settings.get_command_parameter_value(
                     chat_id=str(chat.id),
                     command=command,
-                    parameter='text')
+                    parameter='message')
             )
         )
 

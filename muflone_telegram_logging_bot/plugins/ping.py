@@ -41,7 +41,7 @@ class PluginPing(BasePlugin):
                              description='Ping if the bot is alive',
                              callback=self.do_command,
                              parameters=(
-                                 Parameter(name='text',
+                                 Parameter(name='message',
                                            description='Message text',
                                            type=ParameterType.STRING,
                                            null=False,
@@ -53,7 +53,7 @@ class PluginPing(BasePlugin):
                              description='Pong if the bot is alive',
                              callback=self.do_command,
                              parameters=(
-                                 Parameter(name='text',
+                                 Parameter(name='message',
                                            description='Message text',
                                            type=ParameterType.STRING,
                                            null=False,
@@ -75,6 +75,6 @@ class PluginPing(BasePlugin):
                 self.bot.settings.get_command_parameter_value(
                     chat_id=str(chat.id),
                     command=command,
-                    parameter='text')
+                    parameter='message')
             )
         )

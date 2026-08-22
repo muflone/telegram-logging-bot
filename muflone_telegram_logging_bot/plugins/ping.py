@@ -70,12 +70,11 @@ class PluginPing(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
-        custom_parameters = self.bot.settings.get_command_parameters(
-            chat_id=str(chat.id),
-            command=command)
         await update.effective_message.reply_text(
             text=(
-                command.parameters['text']
-                .parse_value(custom_parameters.get('text'))
+                self.bot.settings.get_command_parameter_value(
+                    chat_id=str(chat.id),
+                    command=command,
+                    parameter='text')
             )
         )

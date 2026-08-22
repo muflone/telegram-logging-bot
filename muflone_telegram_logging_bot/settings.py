@@ -231,6 +231,25 @@ class Settings:
         custom_parameter.pop(parameter)
         self.save_chat(chat_id=chat_id)
 
+    def get_command_parameter_value(self,
+                                    chat_id: str,
+                                    command: Command,
+                                    parameter: str,
+                                    ) -> Any:
+        """
+        Return the parameters for a command
+
+        :param chat_id: chat id as string
+        :param command: command details
+        :param parameter: parameter name
+        :return: parameter value
+        """
+        custom_parameters = self.get_command_parameters(
+            chat_id=chat_id,
+            command=command)
+        return command.parameters[parameter].parse_value(
+            custom_parameters.get(parameter))
+
     def user_in_list(self,
                      user: Optional[telegram.User],
                      users_list: list[str]

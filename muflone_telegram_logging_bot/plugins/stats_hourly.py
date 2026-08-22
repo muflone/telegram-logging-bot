@@ -29,6 +29,8 @@ import PIL.ImageDraw
 from .base import BasePlugin
 from ..image import load_font
 from ..command import Command
+from ..extras import timezone_offset
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -55,7 +57,13 @@ class PluginStatsHourly(BasePlugin):
             self.new_command(trigger='stats_hourly',
                              description='Show messages count chart by hour',
                              callback=self.do_command,
-                             parameters=None,
+                             parameters=(
+                                 Parameter(name='timezone',
+                                           description='Timezone',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='UTC'),
+                             ),
                              include_in_list=True,
                              sequence=603),
         )
@@ -69,22 +77,31 @@ class PluginStatsHourly(BasePlugin):
         chat = update.effective_chat
         if context.args:
             # Use parsed date if specified
-            date_start, date_end = self.parse_dates(context=context)
+            selected_date1, selected_date2 = self.parse_dates(context=context)
+            date_start = datetime.datetime.fromordinal(
+                selected_date1.toordinal())
+            date_end = datetime.datetime.fromordinal(
+                (selected_date2 + datetime.timedelta(days=1)).toordinal())
             if date_start and date_end:
-                rows = self.get_messages_by_hour(chat=chat,
-                                                 date_start=date_start,
-                                                 date_end=date_end)
-                date_title = (f'{date_start.isoformat()} '
-                              f'to {date_end.isoformat()}(UTC)')
+                date_title = (f'{selected_date1.isoformat()} '
+                              f'to {selected_date2.isoformat()}')
             valid_date = date_start and date_end
         else:
             # Use the latest 24 hours if no date was specified
-            rows = self.get_messages_by_hour_24_hours(chat=chat)
+            date_end = datetime.datetime.now()
+            date_start = date_end - datetime.timedelta(hours=24)
             date_title = 'the latest 24 hours'
             valid_date = True
         if valid_date:
+            timezone = self.bot.settings.get_command_parameter_value(
+                chat_id=str(chat.id),
+                command=command,
+                parameter='timezone')
             graph_title = f'Hourly messages count for {date_title}'
-            if rows:
+            if rows := self.get_messages_by_hour(chat=chat,
+                                                 date_start=date_start,
+                                                 date_end=date_end,
+                                                 tz_name=timezone):
                 # Set 0 for the missing data
                 hourly_values = {
                     hour: 0
@@ -98,12 +115,12 @@ class PluginStatsHourly(BasePlugin):
                     title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
-                    caption=graph_title)
+                    caption=f'{graph_title} ({timezone})')
             else:
                 # No results
                 await update.effective_message.reply_text(
-                    text=f'No results from {date_start.isoformat()} '
-                         f'to {date_end.isoformat()}')
+                    text=f'No results from {selected_date1.isoformat()} '
+                         f'to {selected_date2.isoformat()}')
         else:
             await update.effective_message.reply_text(
                 text=f'Usage: /{command.trigger} [YYYY-MM-DD] [YYYY-MM-DD]')
@@ -115,17 +132,19 @@ class PluginStatsHourly(BasePlugin):
         Parse dates from command arguments
 
         :param context: telegram Context object
-        :return: tuple with two dates or None
+        :return: tuple with two datetime or None
         """
         if context.args:
             # Get first argument
             try:
                 # Try to parse the specified date
-                date_1 = datetime.date.strptime(context.args[0],
-                                                '%Y-%m-%d')
+                date_1 = datetime.date.fromordinal(
+                    datetime.date.strptime(context.args[0],
+                                           '%Y-%m-%d').toordinal())
                 try:
-                    date_2 = datetime.date.strptime(context.args[1],
-                                                    '%Y-%m-%d')
+                    date_2 = datetime.date.fromordinal(
+                        datetime.date.strptime(context.args[1],
+                                               '%Y-%m-%d').toordinal())
                 except IndexError:
                     date_2 = date_1
             except ValueError:
@@ -133,7 +152,8 @@ class PluginStatsHourly(BasePlugin):
                 date_2 = None
         else:
             # Use today if date is not specified
-            date_1 = datetime.date.today()
+            date_1 = datetime.date.fromordinal(
+                datetime.date.today().toordinal())
             date_2 = date_1
         return (date_1, date_2)
 
@@ -141,15 +161,19 @@ class PluginStatsHourly(BasePlugin):
                              chat: telegram.Chat,
                              date_start: datetime.date,
                              date_end: datetime.date,
+                             tz_name: str,
                              ) -> list[sqlite3.Row]:
         """
         Get the most active members by messages count
 
         :param chat: chat details
         :param date_start: starting date
+        :param tz_name: timezone name
         :param date_end: ending date
         :return: list of Rows with data
         """
+        zone_offset = timezone_offset(tz_name=tz_name,
+                                      when=date_start)
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
@@ -157,50 +181,20 @@ class PluginStatsHourly(BasePlugin):
             result = connection.execute(
                 '''
                 SELECT
-                  STRFTIME('%H', messages.date) AS hour,
+                  STRFTIME('%H', DATETIME(messages.date, ?)) AS hour,
                   COUNT(*) AS messages_count
                 FROM messages
-                WHERE TRUE
-                  AND DATE(messages.date) BETWEEN ? AND ?
+                WHERE DATETIME(messages.date, ?) >= ?
+                  AND DATETIME(messages.date, ?) < ?
                 GROUP BY hour
                 ORDER BY hour ASC
                 ''',
                 (
-                    date_start.isoformat(),
-                    date_end.isoformat(),
-                )
-            ).fetchall()
-        return result
-
-    def get_messages_by_hour_24_hours(self,
-                                      chat: telegram.Chat,
-                                      ) -> list[sqlite3.Row]:
-        """
-        Get the most active members by messages count in the latest 24 hours
-
-        :param chat: chat details
-        :return: list of Rows with data
-        """
-        date_end = datetime.datetime.now()
-        date_start = date_end - datetime.timedelta(hours=24)
-        database = self.bot.databases.get_database(
-            directory_name=str(chat.id))
-        with database.open() as connection:
-            self.update_database_schema(connection=connection)
-            result = connection.execute(
-                '''
-                SELECT
-                  STRFTIME('%H', messages.date) AS hour,
-                  COUNT(*) AS messages_count
-                FROM messages
-                WHERE TRUE
-                  AND messages.date BETWEEN ? AND ?
-                GROUP BY hour
-                ORDER BY hour ASC
-                ''',
-                (
-                    date_start.isoformat(),
-                    date_end.isoformat(),
+                    zone_offset,
+                    zone_offset,
+                    date_start,
+                    zone_offset,
+                    date_end,
                 )
             ).fetchall()
         return result

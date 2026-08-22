@@ -21,6 +21,7 @@
 import datetime
 import io
 from typing import TYPE_CHECKING
+import zoneinfo
 
 import PIL.Image
 import PIL.ImageDraw
@@ -75,6 +76,10 @@ class PluginStatsActiveUsers(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
+        timezone = self.bot.settings.get_command_parameter_value(
+            chat_id=str(chat.id),
+            command=command,
+            parameter='timezone')
         selected_date = self.parse_date(context=context)
         if context.args:
             # Use parsed date if specified
@@ -86,15 +91,11 @@ class PluginStatsActiveUsers(BasePlugin):
                 date_title = f'{selected_date.isoformat()}'
         else:
             # Use the latest 24 hours if no date was specified
-            date_end = datetime.datetime.now()
+            date_end = datetime.datetime.now(tz=zoneinfo.ZoneInfo(timezone))
             date_start = date_end - datetime.timedelta(hours=24)
             date_title = 'the latest 24 hours'
             valid_date = True
         if valid_date:
-            timezone = self.bot.settings.get_command_parameter_value(
-                chat_id=str(chat.id),
-                command=command,
-                parameter='timezone')
             graph_title = f'Most active members for {date_title}'
             if rows := self.get_graph_data(chat=chat,
                                            date_start=date_start,

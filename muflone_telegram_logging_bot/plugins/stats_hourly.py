@@ -22,6 +22,7 @@ import datetime
 import io
 import math
 from typing import TYPE_CHECKING
+import zoneinfo
 
 import PIL.Image
 import PIL.ImageDraw
@@ -75,6 +76,10 @@ class PluginStatsHourly(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
+        timezone = self.bot.settings.get_command_parameter_value(
+            chat_id=str(chat.id),
+            command=command,
+            parameter='timezone')
         selected_date1, selected_date2 = self.parse_dates(context=context)
         if context.args:
             # Use parsed date if specified
@@ -88,15 +93,11 @@ class PluginStatsHourly(BasePlugin):
                                   f'to {selected_date2.isoformat()}')
         else:
             # Use the latest 24 hours if no date was specified
-            date_end = datetime.datetime.now()
+            date_end = datetime.datetime.now(tz=zoneinfo.ZoneInfo(timezone))
             date_start = date_end - datetime.timedelta(hours=24)
             date_title = 'the latest 24 hours'
             valid_date = True
         if valid_date:
-            timezone = self.bot.settings.get_command_parameter_value(
-                chat_id=str(chat.id),
-                command=command,
-                parameter='timezone')
             graph_title = f'Hourly messages count for {date_title}'
             if rows := self.get_graph_data(chat=chat,
                                            date_start=date_start,

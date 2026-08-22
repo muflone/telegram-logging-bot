@@ -260,7 +260,11 @@ class PluginAdminChat(BasePlugin):
             parameter_name = args[2]
             parameter_value = ' '.join(args[3:]) if len(args) >= 4 else None
             chat = update.effective_chat
-            if action == 'set':
+            if command_name not in self.bot.commands:
+                # Invalid command name
+                await update.effective_message.reply_text(
+                    text=f'Invalid command {command_name}')
+            elif action == 'set':
                 self.bot.settings.set_command_parameter(
                     chat_id=str(chat.id),
                     command_name=command_name,

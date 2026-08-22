@@ -32,6 +32,8 @@ import PIL.ImageFont
 from .base import BasePlugin
 from ..image import load_font
 from ..command import Command
+from ..extras import timezone_offset
+from ..parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     import sqlite3
@@ -58,7 +60,13 @@ class PluginStatsMembers(BasePlugin):
             self.new_command(trigger='stats_members',
                              description='Show members growth chart',
                              callback=self.do_command,
-                             parameters=None,
+                             parameters=(
+                                 Parameter(name='timezone',
+                                           description='Timezone',
+                                           type=ParameterType.STRING,
+                                           null=False,
+                                           default='UTC'),
+                             ),
                              include_in_list=True,
                              sequence=601),
         )
@@ -70,28 +78,54 @@ class PluginStatsMembers(BasePlugin):
                          command: Command,
                          ) -> None:
         chat = update.effective_chat
-        if dates := self.parse_dates(context=context):
-            date_start, date_end = dates
+        if context.args:
+            # Use parsed date if specified
+            selected_date1, selected_date2 = self.parse_dates(context=context)
+            date_start = datetime.datetime.fromordinal(
+                selected_date1.toordinal())
+            date_end = datetime.datetime.fromordinal(
+                (selected_date2 + datetime.timedelta(days=1)).toordinal())
+            if date_start and date_end:
+                date_title = (f'{selected_date1.isoformat()} '
+                              f'to {selected_date2.isoformat()}')
+            valid_date = date_start and date_end
+        else:
+            # Get the range from 1 month ago and today
+            date_end = datetime.datetime.today()
+            date_start = (date_end -
+                          dateutil.relativedelta.relativedelta(months=1)
+                          ).replace(hour=0,
+                                    minute=0,
+                                    second=0,
+                                    microsecond=0)
+            date_title = 'the latest month'
+            valid_date = True
+        if valid_date:
+            timezone = self.bot.settings.get_command_parameter_value(
+                chat_id=str(chat.id),
+                command=command,
+                parameter='timezone')
+            graph_title = f'Members growth from {date_title}'
             if rows := self.get_graph_data(chat=chat,
-                                           start_date=date_start,
-                                           end_date=date_end):
+                                           date_start=date_start,
+                                           date_end=date_end,
+                                           tz_name=timezone):
                 # Results found
-                values = self.interpolate_daily_values(rows=rows,
-                                                       date_start=date_start,
-                                                       date_end=date_end)
+                values = self.interpolate_daily_values(
+                    rows=rows,
+                    date_start=date_start.date(),
+                    date_end=date_end.date())
 
                 image = self.create_graph_image(values=values,
-                                                start_date=start_date,
-                                                end_date=end_date)
+                                                title=graph_title)
                 await update.effective_message.reply_photo(
                     photo=image,
-                    caption='Members growth')
+                    caption=f'{graph_title} ({timezone})')
             else:
                 # No results
                 await update.effective_message.reply_text(
-                    text=(f'No members count data between '
-                          f'{start_date.isoformat()} and '
-                          f'{end_date.isoformat()}'))
+                    text=f'No results from {selected_date1.isoformat()} '
+                         f'to {selected_date2.isoformat()}')
         else:
             await update.effective_message.reply_text(
                 text=f'Usage: /{command.trigger} [YYYY-MM-DD] [YYYY-MM-DD]')
@@ -103,35 +137,36 @@ class PluginStatsMembers(BasePlugin):
         Parse dates from command arguments
 
         :param context: telegram Context object
-        :return: tuple with start date and end date or None
+        :return: tuple with two date or None
         """
-        try:
-            if len(context.args) == 0:
-                # Get the range from 1 month ago and today
-                end_date = datetime.date.today()
-                start_date = (end_date -
-                              dateutil.relativedelta.relativedelta(months=1))
-            elif len(context.args) == 1:
-                # Get the range from date to today
-                end_date = datetime.date.today()
-                start_date = datetime.date.fromisoformat(context.args[0])
-            elif len(context.args) >= 2:
-                # Get the range from date to date
-                start_date = datetime.date.fromisoformat(context.args[0])
-                end_date = datetime.date.fromisoformat(context.args[1])
-            # Make sure the start date if not higher than end date
-            if start_date > end_date:
-                result = None
-            else:
-                result = start_date, end_date
-        except ValueError:
-            result = None
-        return result
+        if context.args:
+            # Get first argument
+            try:
+                # Try to parse the specified date
+                date_1 = datetime.date.fromordinal(
+                    datetime.date.strptime(context.args[0],
+                                           '%Y-%m-%d').toordinal())
+                try:
+                    date_2 = datetime.date.fromordinal(
+                        datetime.date.strptime(context.args[1],
+                                               '%Y-%m-%d').toordinal())
+                except IndexError:
+                    date_2 = datetime.date.today()
+            except ValueError:
+                date_1 = None
+                date_2 = None
+        else:
+            # Get the range from 1 month ago and today
+            date_2 = datetime.date.today()
+            date_1 = (date_2 -
+                      dateutil.relativedelta.relativedelta(months=1))
+        return (date_1, date_2)
 
     def get_graph_data(self,
                        chat: telegram.Chat,
                        date_start: datetime.date,
                        date_end: datetime.date,
+                       tz_name: str,
                        ) -> list[sqlite3.Row]:
         """
         Get members count grouped by day
@@ -139,8 +174,11 @@ class PluginStatsMembers(BasePlugin):
         :param chat: chat details
         :param date_start: initial date
         :param date_end: final date
+        :param tz_name: timezone name
         :return: list of Rows with data
         """
+        zone_offset = timezone_offset(tz_name=tz_name,
+                                      when=date_start)
         database = self.bot.databases.get_database(
             directory_name=str(chat.id))
         with database.open() as connection:
@@ -150,24 +188,27 @@ class PluginStatsMembers(BasePlugin):
                 WITH last_dates AS (
                   SELECT
                     members_count.id,
-                    MAX(members_count.taken_at)
+                    MAX(members_count.taken_at) AS last_count
                   FROM members_count
-                  GROUP BY date(members_count.taken_at)
+                  GROUP BY DATE(DATETIME(members_count.taken_at, ?))
                 )
                 SELECT
                   members_count.id,
-                  date(members_count.taken_at) AS date,
+                  DATE(last_dates.last_count) AS date,
                   members_count.total AS users_count
                 FROM members_count
                 INNER JOIN last_dates
                    ON last_dates.id = members_count.id
-                WHERE TRUE
-                  AND date(members_count.taken_at) BETWEEN ? AND ?
+                WHERE DATETIME(members_count.taken_at, ?) >= ?
+                  AND DATETIME(members_count.taken_at, ?) < ?
                 ORDER BY date ASC
                 ''',
                 (
-                    date_start.isoformat(),
-                    date_end.isoformat(),
+                    zone_offset,
+                    zone_offset,
+                    date_start,
+                    zone_offset,
+                    date_end,
                 ),
             ).fetchall()
         return result
@@ -237,15 +278,13 @@ class PluginStatsMembers(BasePlugin):
 
     def create_graph_image(self,
                            values: list[tuple[datetime.date, float]],
-                           start_date: datetime.date,
-                           end_date: datetime.date,
+                           title: str,
                            ) -> io.BytesIO:
         """
         Create the growth chart image.
 
         :param values: list with tuple with date and users count
-        :param start_date: initial date
-        :param end_date: ending date
+        :param title: graph title
         :return: binary data with the graph image
         """
         width = 600
@@ -270,7 +309,7 @@ class PluginStatsMembers(BasePlugin):
         label_font = load_font(size=9)
         # Draw title
         draw.text(xy=(16, 9),
-                  text='Members growth',
+                  text=title,
                   fill=TITLE_COLOR,
                   font=title_font)
 

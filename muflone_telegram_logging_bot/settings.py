@@ -156,7 +156,7 @@ class Settings:
 
         :param chat_id: chat id as string
         :param list_name: list name to get
-        :return: list of members
+        :return: list of items
         """
         return copy.copy(self.chats_data.get(chat_id, {}).get(list_name, []))
 

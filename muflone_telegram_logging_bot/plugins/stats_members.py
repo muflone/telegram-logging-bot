@@ -81,22 +81,18 @@ class PluginStatsMembers(BasePlugin):
         if context.args:
             # Use parsed date if specified
             if valid_date := selected_date1 and selected_date2:
-                date_start = datetime.datetime.fromordinal(
-                    selected_date1.toordinal())
-                date_end = datetime.datetime.fromordinal(
-                    (selected_date2 + datetime.timedelta(days=1)).toordinal())
+                date_start = selected_date1
+                date_end = selected_date2
                 if date_start and date_end:
                     date_title = (f'{selected_date1.isoformat()} '
                                   f'to {selected_date2.isoformat()}')
         else:
             # Get the range from 1 month ago and today
-            date_end = datetime.datetime.today()
-            date_start = (date_end -
-                          dateutil.relativedelta.relativedelta(months=1)
-                          ).replace(hour=0,
-                                    minute=0,
-                                    second=0,
-                                    microsecond=0)
+            date_end = datetime.date.today()
+            date_start = datetime.date.fromordinal(
+                (datetime.datetime.today() -
+                 dateutil.relativedelta.relativedelta(months=1)).toordinal()
+            )
             date_title = 'the latest month'
             valid_date = True
         if valid_date:
@@ -105,15 +101,18 @@ class PluginStatsMembers(BasePlugin):
                 command=command,
                 parameter='timezone')
             graph_title = f'Members growth from {date_title}'
-            if rows := self.get_graph_data(chat=chat,
-                                           date_start=date_start,
-                                           date_end=date_end,
-                                           tz_name=timezone):
+            if rows := self.get_graph_data(
+                    chat=chat,
+                    date_start=datetime.datetime.fromordinal(
+                        date_start.toordinal()),
+                    date_end=datetime.datetime.fromordinal(
+                        date_end.toordinal() + 1),
+                    tz_name=timezone):
                 # Results found
                 values = self.interpolate_daily_values(
                     rows=rows,
-                    date_start=date_start.date(),
-                    date_end=date_end.date())
+                    date_start=date_start,
+                    date_end=date_end)
 
                 image = self.create_graph_image(values=values,
                                                 title=graph_title)

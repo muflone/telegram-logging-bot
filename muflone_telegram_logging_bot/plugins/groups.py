@@ -641,7 +641,7 @@ class PluginGroups(BasePlugin):
                     'name': self.__class__.__name__,
                     'event': 'load_users_cache_error',
                     'chat_id': chat_id,
-                    'database': str(db_path),
+                    'database': database.filepath,
                     'error': str(error),
                 })
         logging.info({

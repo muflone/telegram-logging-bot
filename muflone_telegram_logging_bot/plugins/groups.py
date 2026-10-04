@@ -613,6 +613,40 @@ class PluginGroups(BasePlugin):
             result = 'membership_changed'
         return result
 
+    def load_users_cache_from_db(self,
+                                 chat_id: int,
+                                 database: Database,
+                                 ) -> int:
+        results = 0
+        try:
+            with database.open() as connection:
+                self.update_database_schema(connection=connection)
+                chat_users = self._users.setdefault(chat_id, {})
+                for row in connection.execute(
+                        '''
+                        SELECT
+                            user_id,
+                            username,
+                            first_name,
+                            last_name
+                        FROM users
+                        '''):
+                    chat_users[row['user_id']] = {
+                        'username': row['username'],
+                        'first_name': row['first_name'],
+                        'last_name': row['last_name'],
+                    }
+                    results += 1
+        except sqlite3.Error as error:
+            logging.error({
+                'name': self.__class__.__name__,
+                'event': 'load_users_cache_error',
+                'chat_id': chat_id,
+                'database': database.filepath,
+                'error': str(error),
+            })
+        return results
+
     def load_users_cache(self) -> None:
         """
         Load users details from the databases into the memory cache
@@ -620,34 +654,9 @@ class PluginGroups(BasePlugin):
         self._users.clear()
         loaded_users = 0
         for chat_id, db_path in self.bot.databases.get_known_groups().items():
-            database = Database(filepath=db_path)
-            try:
-                with database.open() as connection:
-                    self.update_database_schema(connection=connection)
-                    chat_users = self._users.setdefault(chat_id, {})
-                    for row in connection.execute(
-                            '''
-                            SELECT
-                                user_id,
-                                username,
-                                first_name,
-                                last_name
-                            FROM users
-                            '''):
-                        chat_users[row['user_id']] = {
-                            'username': row['username'],
-                            'first_name': row['first_name'],
-                            'last_name': row['last_name'],
-                        }
-                        loaded_users += 1
-            except sqlite3.Error as error:
-                logging.error({
-                    'name': self.__class__.__name__,
-                    'event': 'load_users_cache_error',
-                    'chat_id': chat_id,
-                    'database': database.filepath,
-                    'error': str(error),
-                })
+            loaded_users += self.load_users_cache_from_db(
+                chat_id=chat_id,
+                database=Database(filepath=db_path))
         logging.info({
             'name': self.__class__.__name__,
             'event': 'load_users_cache',

@@ -80,15 +80,17 @@ class PluginStatsActiveUsers(BasePlugin):
             chat_id=str(chat.id),
             command=command,
             parameter='timezone')
-        selected_date = self.parse_date(context=context)
+        selected_date1, selected_date2 = self.parse_dates(context=context)
         if context.args:
             # Use parsed date if specified
-            if valid_date := selected_date is not None:
+            if valid_date := selected_date1 and selected_date2:
                 date_start = datetime.datetime.fromordinal(
-                    selected_date.toordinal())
+                    selected_date1.toordinal())
                 date_end = datetime.datetime.fromordinal(
-                    (selected_date + datetime.timedelta(days=1)).toordinal())
-                date_title = f'{selected_date.isoformat()}'
+                    (selected_date2 + datetime.timedelta(days=1)).toordinal())
+                if date_start and date_end:
+                    date_title = (f'{selected_date1.isoformat()} '
+                                  f'to {selected_date2.isoformat()}')
         else:
             # Use the latest 24 hours if no date was specified
             date_end = datetime.datetime.now(tz=zoneinfo.ZoneInfo(timezone))
@@ -116,26 +118,36 @@ class PluginStatsActiveUsers(BasePlugin):
             await update.effective_message.reply_text(
                 text=f'Usage: /{command.trigger} [YYYY-MM-DD]')
 
-    def parse_date(self,
-                   context: telegram.ext.ContextTypes.DEFAULT_TYPE,
-                   ) -> Optional[datetime.date]:
+    def parse_dates(self,
+                    context: telegram.ext.ContextTypes.DEFAULT_TYPE,
+                    ) -> tuple[Optional[datetime.date], ...]:
         """
-        Parse date from command arguments
+        Parse dates from command arguments
 
         :param context: telegram Context object
-        :return: selected date or None
+        :return: tuple with two date or None
         """
         if context.args:
+            # Get first argument
             try:
                 # Try to parse the specified date
-                result = datetime.date.strptime(context.args[0],
-                                                '%Y-%m-%d')
+                date_1 = datetime.date.fromordinal(
+                    datetime.date.strptime(context.args[0],
+                                           '%Y-%m-%d').toordinal())
+                try:
+                    date_2 = datetime.date.fromordinal(
+                        datetime.date.strptime(context.args[1],
+                                               '%Y-%m-%d').toordinal())
+                except IndexError:
+                    date_2 = date_1
             except ValueError:
-                result = None
+                date_1 = None
+                date_2 = None
         else:
-            # Use today if date is not specified
-            result = datetime.date.today()
-        return result
+            date_1 = datetime.date.fromordinal(
+                datetime.date.today().toordinal())
+            date_2 = date_1
+        return (date_1, date_2)
 
     def get_graph_data(self,
                        chat: telegram.Chat,

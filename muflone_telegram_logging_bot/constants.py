@@ -18,4 +18,5 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ##
 
-APP_VERSION = '0.6.4'
+APP_NAME = 'Telegram Logging Bot'
+APP_VERSION = '0.7.0'

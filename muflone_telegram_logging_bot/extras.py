@@ -31,15 +31,6 @@ def utc_now() -> str:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def utc_now_iso() -> str:
-    """
-    Get the current datetime in ISO format
-
-    :return: current date in ISO as string
-    """
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
-
-
 def timezone_offset(tz_name: str,
                     when: datetime.datetime
                     ) -> str:

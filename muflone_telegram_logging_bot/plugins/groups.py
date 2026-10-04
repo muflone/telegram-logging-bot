@@ -200,7 +200,6 @@ class PluginGroups(BasePlugin):
         :param connection: database connection
         :param chat: chat details
         """
-        now = extras.utc_now_iso()
         connection.execute(
             '''
             INSERT INTO chat (
@@ -223,8 +222,8 @@ class PluginGroups(BasePlugin):
                 chat.type,
                 chat.title,
                 chat.username,
-                now,
-                now,
+                extras.utc_now().isoformat(),
+                extras.utc_now().isoformat(),
             )
         )
 
@@ -412,7 +411,7 @@ class PluginGroups(BasePlugin):
                 actor_user.id if actor_user else None,
                 old_status,
                 new_status,
-                message.date.isoformat() if message else extras.utc_now_iso(),
+                (message.date if message else extras.utc_now).isoformat(),
             ),
         )
 

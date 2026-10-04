@@ -91,7 +91,7 @@ class PluginMembersCount(BasePlugin):
                         (
                             members_count,
                             source,
-                            extras.utc_now_iso(),
+                            extras.utc_now().isoformat(),
                         ),
                     )
                     connection.commit()

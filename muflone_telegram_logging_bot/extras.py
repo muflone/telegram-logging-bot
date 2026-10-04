@@ -22,6 +22,15 @@ import datetime
 import zoneinfo
 
 
+def utc_now() -> str:
+    """
+    Get the current datetime
+
+    :return: current date
+    """
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
 def utc_now_iso() -> str:
     """
     Get the current datetime in ISO format

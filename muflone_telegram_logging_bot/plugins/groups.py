@@ -30,6 +30,7 @@ from ..database import Database
 from ..command import Command
 
 if TYPE_CHECKING:
+    import datetime
     from typing import Optional
 
     import telegram.ext
@@ -119,7 +120,8 @@ class PluginGroups(BasePlugin):
                                    chat=chat)
                     self.save_user(connection=connection,
                                    user=user,
-                                   chat=chat)
+                                   chat=chat,
+                                   timestamp=message.date)
                     self.save_message(connection=connection,
                                       chat=chat,
                                       message=message,
@@ -155,11 +157,13 @@ class PluginGroups(BasePlugin):
                     if user := new_member.user:
                         self.save_user(connection=connection,
                                        user=user,
-                                       chat=chat)
+                                       chat=chat,
+                                       timestamp=update.chat_member.date)
                     if actor := update.effective_user:
                         self.save_user(connection=connection,
                                        user=actor,
-                                       chat=chat)
+                                       chat=chat,
+                                       timestamp=update.chat_member.date)
                     event_type = self.get_chat_member_change_type(
                             member_update=(update.chat_member or
                                            update.my_chat_member),
@@ -228,6 +232,7 @@ class PluginGroups(BasePlugin):
                   connection: sqlite3.Connection,
                   user: telegram.User,
                   chat: telegram.Chat,
+                  timestamp: datetime.datetime,
                   ) -> None:
         """
         Save the user information to database
@@ -235,8 +240,8 @@ class PluginGroups(BasePlugin):
         :param connection: database connection
         :param user: user details
         :param chat: chat details
+        :param timestamp: chat event timestamp
         """
-        now = extras.utc_now_iso()
         connection.execute(
             '''
             INSERT INTO users (
@@ -264,7 +269,7 @@ class PluginGroups(BasePlugin):
                 user.first_name,
                 user.last_name,
                 user.language_code,
-                now,
+                (timestamp or extras.utc_now()).isoformat(),
             ),
         )
         # Save user details to history
@@ -291,7 +296,7 @@ class PluginGroups(BasePlugin):
                     user.username,
                     user.first_name,
                     user.last_name,
-                    now,
+                    (timestamp or extras.utc_now()).isoformat(),
                 ),
             )
             # Keep user details

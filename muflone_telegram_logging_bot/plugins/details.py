@@ -78,7 +78,9 @@ class PluginDetails(BasePlugin):
             command: Command,
     ) -> None:
         chat = update.effective_chat
-        user = update.effective_user
+        user = (update.effective_message.reply_to_message.from_user
+                if update.effective_message.reply_to_message
+                else update.effective_user)
         user_details = await context.bot.get_chat(chat_id=user.id)
         chat_member = await context.bot.get_chat_member(chat_id=chat.id,
                                                         user_id=user.id)

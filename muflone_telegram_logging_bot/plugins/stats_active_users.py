@@ -113,7 +113,7 @@ class PluginStatsActiveUsers(BasePlugin):
             else:
                 # No results
                 await update.effective_message.reply_text(
-                    text=f'No results for {selected_date.isoformat()}')
+                    text=f'No results for {selected_date1.isoformat()}')
         else:
             await update.effective_message.reply_text(
                 text=f'Usage: /{command.trigger} [YYYY-MM-DD]')

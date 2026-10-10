@@ -58,9 +58,12 @@ class PluginDetails(BasePlugin):
             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
             command: Command,
     ) -> None:
-        chat = update.effective_chat
+        message = update.effective_message
+        chat = (message.external_reply.chat
+                if message.external_reply
+                else update.effective_chat)
         chat_details = await context.bot.get_chat(chat.id)
-        await update.effective_message.reply_text(
+        await message.reply_text(
             text=('Chat details:\n'
                   '\n'
                   f'Type: {chat.type or ''}\n'

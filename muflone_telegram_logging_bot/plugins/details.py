@@ -20,11 +20,12 @@
 
 from typing import TYPE_CHECKING
 
+import telegram
+
 from .base import BasePlugin
 from ..command import Command
 
 if TYPE_CHECKING:
-    import telegram
     import telegram.ext
 
 
@@ -77,14 +78,39 @@ class PluginDetails(BasePlugin):
             context: telegram.ext.ContextTypes.DEFAULT_TYPE,
             command: Command,
     ) -> None:
+        message = update.effective_message
         chat = update.effective_chat
-        user = (update.effective_message.reply_to_message.from_user
-                if update.effective_message.reply_to_message
-                else update.effective_user)
-        user_details = await context.bot.get_chat(chat_id=user.id)
-        chat_member = await context.bot.get_chat_member(chat_id=chat.id,
-                                                        user_id=user.id)
-        await update.effective_message.reply_text(
+        if message.external_reply:
+            if isinstance(message.external_reply.origin,
+                          telegram.MessageOriginHiddenUser):
+                # No user info available
+                user = telegram.User(
+                    id=None,
+                    first_name=None,
+                    is_bot=None,
+                    username=message.external_reply.origin.sender_user_name)
+                user_details = telegram.ChatFullInfo(
+                    id=user.id,
+                    type=None,
+                    accent_color_id=None,
+                    max_reaction_count=None,
+                    accepted_gift_types=None)
+                chat_member = telegram.ChatMember(user=user,
+                                                  status=None)
+            else:
+                user = message.external_reply.origin.sender_user
+                user_details = await context.bot.get_chat(chat_id=user.id)
+                chat_member = await context.bot.get_chat_member(
+                    chat_id=chat.id,
+                    user_id=user.id)
+        else:
+            user = (message.reply_to_message.from_user
+                    if message.reply_to_message
+                    else update.effective_user)
+            user_details = await context.bot.get_chat(chat_id=user.id)
+            chat_member = await context.bot.get_chat_member(chat_id=chat.id,
+                                                            user_id=user.id)
+        await message.reply_text(
             text=('User details:\n'
                   '\n'
                   f'ID: {user.id}\n'
